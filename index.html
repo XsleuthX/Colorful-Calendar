@@ -136,7 +136,23 @@
     .search li:hover{background:rgba(255,255,255,.12)}
     .search li.active{outline:2px solid rgba(255,255,255,.6)}
     .badge{background:#fff;color:#153960;border-radius:999px;padding:2px 8px;font-weight:800;font-size:12px}
-  </style>
+  /* === Edit panel (expand/collapse form) === */
+.edit-panel {
+  position: sticky; top: 0; z-index: 1;
+  display:flex; align-items:center; gap:10px;
+  padding:10px 12px; margin:-14px -12px 8px;
+  background:rgba(255,255,255,.08);
+  border-bottom:1px solid rgba(255,255,255,.15);
+  border-top-left-radius:12px; border-top-right-radius:12px;
+}
+.edit-panel button {
+  appearance:none;border:0;border-radius:10px;
+  padding:8px 12px;background:rgba(255,255,255,.16);
+  color:#fff;font-weight:800;cursor:pointer;
+}
+.event-form.collapsed { display:none !important; }
+[hidden]{display:none !important;}
+</style>
 </head>
 <body>
   <main class="app" aria-label="Calendar application">
@@ -201,7 +217,12 @@
         <button class="drawer-close" id="drawerClose">Close</button>
       </div>
       <div class="drawer-body">
-        <form class="event-form" id="eventForm">
+        <div class="edit-panel" id="editPanel">
+  <button id="editPanelToggle" aria-expanded="false" aria-controls="eventForm">
+    Show edit panel ▼
+  </button>
+</div>
+<form class="event-form collapsed" id="eventForm" hidden>
           <input type="text" id="eventTitle" class="title-field" placeholder="Add an event" required />
           <input type="date" id="eventStartDate" class="date-start" />
           <input type="date" id="eventEndDate" class="date-end" />
@@ -232,6 +253,35 @@
   const drawerTitle = document.getElementById('drawerTitle');
   const drawerHours = document.getElementById('drawerHours');
   const form = document.getElementById('eventForm');
+
+let isEditPanelOpen = false;
+function setEditPanel(open){
+  isEditPanelOpen = !!open;
+  const formEl = document.getElementById('eventForm');
+  if (formEl){
+    formEl.classList.toggle('collapsed', !isEditPanelOpen);
+    try{ formEl.toggleAttribute('hidden', !isEditPanelOpen); }catch(e){}
+  }
+  const toggleBtn = document.getElementById('editPanelToggle');
+  if (toggleBtn){
+    toggleBtn.setAttribute('aria-expanded', String(isEditPanelOpen));
+    toggleBtn.textContent = isEditPanelOpen ? 'Hide edit panel ▲' : 'Show edit panel ▼';
+  }
+}
+const editPanel = document.getElementById('editPanel');
+const editPanelToggle = document.getElementById('editPanelToggle');
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  const toggleBtn = document.getElementById('editPanelToggle');
+  if (toggleBtn){
+    toggleBtn.addEventListener('click', ()=> setEditPanel(!isEditPanelOpen));
+    toggleBtn.addEventListener('keydown', (e)=>{
+      if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); setEditPanel(!isEditPanelOpen); }
+    });
+  }
+});
+
+
   const titleInput = document.getElementById('eventTitle');
   const startDateInput = document.getElementById('eventStartDate');
   const endDateInput = document.getElementById('eventEndDate');
@@ -319,6 +369,7 @@
   canvas.addEventListener('scroll', setActiveMonthByScroll, {passive:true});
 
   function openDrawer(date){
+  try{ setEditPanel(false); }catch(e){}
     exitEditMode();
     state.drawerDate = new Date(date);
     drawerTitle.textContent = `${dows[date.getDay()]} · ${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
@@ -329,6 +380,7 @@
     endInput.value = String((now.getHours()+1)%24).padStart(2,'0') + ':00';
     titleInput.value = ''; locationInput.value=''; colorInput.value = '#74FBD6';
     renderDayHours(date);
+  try{ setEditPanel(false);}catch(e){}
     drawer.classList.add('open'); drawer.setAttribute('aria-hidden','false');
   }
   function closeDrawer(){ drawer.classList.remove('open'); drawer.setAttribute('aria-hidden','true'); exitEditMode(); }
@@ -393,6 +445,7 @@
   }
 
   function enterEditMode(key, id, chipEl, e){
+  try{ setEditPanel(true); }catch(e){}
     exitEditMode();
     editing = { key, id, chipEl };
     chipEl.classList.add('editing');
@@ -431,7 +484,8 @@
     }
 
     titleInput.value='';
-  });
+    try{ if(__collapseAfterSubmit) setEditPanel(false);}catch(e){}
+});
 
   document.getElementById('drawerClose').addEventListener('click', closeDrawer);
   canvas.addEventListener('click', closeDrawer);
@@ -448,6 +502,7 @@
     if (today.getFullYear() !== state.year){
       state.year = today.getFullYear();
       buildYear();
+setEditPanel(false);
     }
     const m = today.getMonth();
     monthEls[m].scrollIntoView({behavior:'smooth', block:'start'});
