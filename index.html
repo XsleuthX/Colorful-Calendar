@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Colorful Calendar</title>
+  <title>Colorful Calendar – Year Stream</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -152,6 +152,137 @@
 }
 .event-form.collapsed { display:none !important; }
 [hidden]{display:none !important;}
+
+/* Country selector */
+.country-select{
+  appearance:none;border:0;border-radius:12px;padding:8px 10px;
+  background:rgba(255,255,255,.16);color:#fff;font-weight:800;cursor:pointer;
+}
+.country-select:hover{background:rgba(255,255,255,.22)}
+
+/* Calendar holiday icon (top-left), and subtle day color tint */
+.cell.holiday .daynum{ color:#FFD166; }
+.cell .holiday-icon{position:absolute;left:8px;top:8px;font-size:14px;line-height:1;color:#FFD166;
+  text-shadow:0 0 2px rgba(0,0,0,.35);pointer-events:none;z-index:2}
+
+/* Full-width holiday strip at top of drawer */
+#drawerHours > .holiday-strip{
+  grid-column:1 / -1;
+  background:#FFD166;
+  color:#153960;
+  border-radius:12px;
+  padding:10px 12px;
+  font-weight:800;
+  display:flex; align-items:center; gap:8px; min-height:42px;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+#drawerHours > .holiday-strip .tag{
+  font-weight:900; background:rgba(255,255,255,.25); padding:2px 6px; border-radius:8px;
+}
+
+
+.cell.sun:not(.out):not(.today):not(.selected) .daynum{
+  background:rgba(255,120,140,.22);
+  border-color:rgba(255,120,140,.90);
+  color:#fff;
+  box-shadow:0 1px 2px rgba(0,0,0,.12);
+}
+.cell.holiday:not(.out):not(.today):not(.selected) .daynum{
+  background:rgba(255,209,102,.28);
+  border-color:#FFD166;
+  color:#153960;
+  text-shadow:0 1px 0 rgba(255,255,255,.30);
+  box-shadow:0 1px 2px rgba(0,0,0,.12);
+}
+
+
+/* Weekend & Holiday day styling (solid colors) */
+.cell.sat:not(.out):not(.today):not(.selected) .daynum,
+.cell.sun:not(.out):not(.today):not(.selected) .daynum{
+  background:#2EA1FF;          /* weekend: solid azure */
+  border-color:#FFFFFF;         /* crisp border */
+  color:#FFFFFF;                /* high contrast */
+  box-shadow:0 1px 2px rgba(0,0,0,.18);
+}
+/* Place holiday after weekend so it wins when a holiday falls on weekend */
+.cell.holiday:not(.out):not(.today):not(.selected) .daynum{
+  background:#FFD166;           /* holiday: solid golden */
+  border-color:#B98900;         /* darker gold border */
+  color:#153960;                /* readable dark text */
+  box-shadow:0 1px 2px rgba(0,0,0,.18);
+}
+
+
+/* Day color context menu */
+.context-menu{
+  position:fixed; top:0; left:0; width:max-content; height:auto;
+  background:rgba(22,36,56,.98); color:#fff;
+  border:1px solid rgba(255,255,255,.15); border-radius:8px;
+  padding:6px; box-shadow:0 6px 16px rgba(0,0,0,.32);
+  z-index:9999; display:none;
+}
+.context-menu[aria-hidden="false"]{ display:grid; grid-template-columns: 132px auto; gap:8px; align-items:center; max-width:unset; }
+.context-menu input[type="color"]{ width:22px; height:22px; padding:0; border:0; background:transparent; cursor:pointer; }
+.context-menu button{ appearance:none; border:0; border-radius:6px; padding:6px 8px; font-weight:700; font-size:12px; cursor:pointer; background:rgba(255,255,255,.14); color:#fff; white-space:nowrap; }
+.context-menu button:hover{ background:rgba(255,255,255,.22); }
+
+
+/* Preset swatches */
+.context-menu{ width:max-content; }
+.context-menu .swatches{ display:flex; flex-wrap:wrap; gap:6px; max-width:200px; margin-right:6px; }
+.context-menu .swatch{ width:20px; height:20px; border-radius:5px; padding:0; border:1px solid rgba(255,255,255,.6); cursor:pointer; background:transparent; }
+.context-menu .swatch:focus{ outline:2px solid rgba(255,255,255,.7); outline-offset:1px; }
+
+
+/* Ensure selected day always has black text for visibility */
+.cell.selected .daynum{ color:#000000 !important; }
+
+
+/* Context menu grid layout: swatches (left) + tools (right) */
+.context-menu{ width:max-content; }
+.context-menu[aria-hidden="false"]{
+  display:grid; grid-template-columns: 132px auto; gap:8px; align-items:center;
+  max-width:unset;
+}
+.context-menu .swatches{
+  display:grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: 20px;
+  gap:6px; width:132px;
+}
+.context-menu .swatch{
+  width:20px; height:20px; border-radius:5px; padding:0;
+  border:1px solid rgba(255,255,255,.6); cursor:pointer; background:transparent;
+}
+.context-menu .tools{ display:flex; align-items:center; gap:10px; }
+.context-menu input[type="color"]{ width:22px; height:22px; padding:0; border:0; background:transparent; cursor:pointer; }
+.context-menu button{ appearance:none; border:0; border-radius:6px; padding:6px 8px; font-weight:700; font-size:12px; cursor:pointer; background:rgba(255,255,255,.14); color:#fff; white-space:nowrap; }
+.context-menu button:hover{ background:rgba(255,255,255,.22); }
+
+
+    /* Multi-day selection highlight */
+    .cell.range:not(.out) .daynum{
+      outline:2px solid #FFFFFF;
+      box-shadow:0 0 0 2px rgba(0,0,0,.25) inset;
+    }
+    
+
+/* Single (plain click) selection: solid white pill */
+.cell.selected-single .daynum{
+  background:#FFFFFF !important;
+  border-color:#FFFFFF !important;
+  color:#0f2742 !important;
+  font-weight:900 !important;
+  box-shadow:0 1px 2px rgba(0,0,0,.25);
+}
+/* Multi (shift+click or drag) selection: rounded cap border */
+.cell.selected-multi .daynum{
+  background:transparent !important;
+  border:2px solid #FFFFFF !important;
+  color:#FFFFFF !important;
+  border-radius:999px !important;
+  font-weight:800;
+  box-shadow:0 1px 2px rgba(0,0,0,.25);
+}
+
 </style>
 </head>
 <body>
@@ -171,7 +302,11 @@
             <button class="btn icon" id="yearNext" aria-label="Next year">›</button>
           </div>
         </div>
-        <div class="right"></div>
+        <div class="right">
+  <select id="countrySelect" class="country-select" aria-label="Country">
+    <option value="SG">🇸🇬 Singapore</option>
+  </select>
+</div>
       </nav>
     </header>
     <div class="weekday-row"><div>SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div></div>
@@ -321,13 +456,210 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const parseYMD = (s)=>{ const [y,m,d] = s.split('-').map(Number); const dt = new Date(y, (m||1)-1, d||1); dt.setHours(0,0,0,0); return dt; };
   const uid = ()=> 'e' + Math.random().toString(36).slice(2,8) + Date.now().toString(36);
 
+  /* === Holidays (offline baked) + Country state === */
+  const HOLIDAYS = {
+    SG: {
+      2025: [
+        {date:'2025-01-01', name:"New Year's Day"},
+        {date:'2025-01-29', name:"Chinese New Year (Day 1)"},
+        {date:'2025-01-30', name:"Chinese New Year (Day 2)"},
+        {date:'2025-03-31', name:"Hari Raya Puasa"},
+        {date:'2025-04-18', name:"Good Friday"},
+        {date:'2025-05-01', name:"Labour Day"},
+        {date:'2025-05-12', name:"Vesak Day"},
+        {date:'2025-06-07', name:"Hari Raya Haji"},
+        {date:'2025-08-09', name:"National Day"},
+        {date:'2025-10-20', name:"Deepavali"},
+        {date:'2025-12-25', name:"Christmas Day"}
+      ]
+    }
+  };
+  let currentCountry = localStorage.getItem('country') || 'SG';
+  const countrySelect = document.getElementById('countrySelect');
+  if (countrySelect){ countrySelect.value = currentCountry; }
+
+  function getHoliday(country, d){
+    const key = (typeof d === 'string') ? d : keyOf(d);
+    const year = Number(key.slice(0,4));
+    const list = (HOLIDAYS[country] && HOLIDAYS[country][year]) || [];
+    const hit = list.find(h => h.date === key);
+    return hit ? hit.name : null;
+  }
+  function setHolidayIcon(cell, on){
+    cell.classList.toggle('holiday', !!on);
+    cell.querySelectorAll('.holiday-icon').forEach(n=>n.remove());
+  }
+  function decorateMonthHolidays(){
+    // iterate through currently built cells for this year
+    dateToCell.forEach((cell, key)=>{
+      if(!key.startsWith(String(state.year))) return;
+      const isHol = !!getHoliday(currentCountry, key);
+      setHolidayIcon(cell, isHol);
+    if(dayColors[key]) applyDayColor(cell, dayColors[key]);
+    });
+  }
+
   function monthMatrix(y,m){ const first = new Date(y,m,1); const start = addDays(first, -first.getDay()); const grid=[]; for(let i=0;i<42;i++) grid.push(addDays(start,i)); return grid; }
   function loadEvents(){ let data={}; try{ data = JSON.parse(localStorage.getItem(STORAGE_KEY))||{} }catch(e){ data = {} } Object.keys(data).forEach(k=>{ data[k].forEach(ev=>{ if(!ev.id) ev.id = uid(); }); }); return data; }
   function saveEvents(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(events)); }
 
   let events = loadEvents();
 
-  function buildYear(){
+  
+  /* === Personalized Day Colors === */
+  const COLOR_KEY = 'DAY_COLORS';
+  function loadDayColors(){ try{ return JSON.parse(localStorage.getItem(COLOR_KEY))||{} }catch(e){ return {} } }
+  function saveDayColors(){ localStorage.setItem(COLOR_KEY, JSON.stringify(dayColors)); }
+  let dayColors = loadDayColors();
+
+  function hexToRgb(hex){ const m = hex.replace('#',''); const n = parseInt(m,16); return {r:(n>>16)&255,g:(n>>8)&255,b:n&255}; }
+  function luminance(hex){ const {r,g,b} = hexToRgb(hex); const sr=[r,g,b].map(v=>{v/=255; return v<=0.03928? v/12.92 : Math.pow((v+0.055)/1.055,2.4)}); return 0.2126*sr[0]+0.7152*sr[1]+0.0722*sr[2]; }
+  function pickText(hex){ try{ return luminance(hex) > 0.5 ? '#153960' : '#FFFFFF'; }catch(e){ return '#FFFFFF'; } }
+  function applyDayColor(cell, hex){
+    const btn = cell.querySelector('.daynum'); if(!btn) return;
+    if(hex){
+      btn.style.background = hex;
+      btn.style.borderColor = '#FFFFFF';
+      btn.style.color = pickText(hex);
+      cell.classList.add('custom');
+    }else{
+      btn.style.background = ''; btn.style.borderColor = ''; btn.style.color = ''; cell.classList.remove('custom');
+    }
+  }
+
+  let colorMenu, colorPicker, colorClear, colorTargetKey=null, colorTargetCell=null;
+  function ensureColorMenu(){
+    colorMenu = document.getElementById('dayColorMenu');
+    colorPicker = document.getElementById('dayColorPicker');
+    colorClear = document.getElementById('dayColorClear');
+    if(!colorMenu || !colorPicker || !colorClear) return;
+    if(!colorMenu.dataset.ready){
+      colorPicker.addEventListener('input', ()=>{
+        const keys = getSelectedKeys();
+        const val = colorPicker.value;
+        if(keys.length){
+          keys.forEach(k=>{ dayColors[k]=val; const cell = dateToCell.get(k); if(cell) applyDayColor(cell, val); });
+          saveDayColors();
+        } else if(colorTargetKey && colorTargetCell){
+          dayColors[colorTargetKey]=val; saveDayColors(); applyDayColor(colorTargetCell, val);
+        }
+      });
+      colorClear.addEventListener('click', ()=>{
+        const keys = getSelectedKeys();
+        if(keys.length){
+          keys.forEach(k=>{ delete dayColors[k]; const cell = dateToCell.get(k); if(cell) applyDayColor(cell, null); });
+          saveDayColors();
+        } else if(colorTargetKey && colorTargetCell){
+          delete dayColors[colorTargetKey]; saveDayColors(); applyDayColor(colorTargetCell, null);
+        }
+        closeDayColorMenu();
+      });
+      document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeDayColorMenu(); });
+      document.addEventListener('click', (e)=>{
+        if(colorMenu.getAttribute('aria-hidden')==='false' && !colorMenu.contains(e.target)) closeDayColorMenu();
+      }, true);
+      colorMenu.dataset.ready = '1';
+
+      // init swatches
+      const swatchWrap = document.getElementById('dayColorSwatches');
+      if(swatchWrap && !swatchWrap.dataset.ready){
+        swatchWrap.querySelectorAll('.swatch').forEach(btn=>{
+        const c = btn.dataset.color; if(c) btn.style.background = c;
+        btn.addEventListener('click', ()=>{
+          const keys = getSelectedKeys();
+          const val = c;
+          if(keys.length){
+            keys.forEach(k=>{ dayColors[k]=val; const cell = dateToCell.get(k); if(cell) applyDayColor(cell, val); });
+            saveDayColors();
+          }else if(colorTargetKey && colorTargetCell){
+            dayColors[colorTargetKey]=val; saveDayColors(); applyDayColor(colorTargetCell, val);
+          }
+          closeDayColorMenu();
+        });
+      });
+        swatchWrap.dataset.ready = '1';
+      }
+    }
+  }
+  function openDayColorMenu(cell, key, x, y){
+    ensureColorMenu(); if(!colorMenu) return;
+    colorTargetCell = cell; colorTargetKey = key;
+    colorPicker.value = dayColors[key] || '#2EA1FF';
+    colorMenu.style.right = '';
+    colorMenu.style.bottom = '';
+    colorMenu.style.left = Math.min(x, window.innerWidth-300) + 'px';
+    colorMenu.style.top  = Math.min(y, window.innerHeight-80) + 'px';
+    colorMenu.setAttribute('aria-hidden','false'); colorMenu.hidden = false;
+  }
+  function closeDayColorMenu(){
+    if(!colorMenu) return;
+    colorMenu.setAttribute('aria-hidden','true'); colorMenu.hidden = true;
+    colorTargetCell=null; colorTargetKey=null;
+  }
+
+  /* === Selection model (single click vs shift+click vs drag) === */
+  let primaryKey = null;          // single-click selection
+  const multiKeys = new Set();    // additive shift+click or drag selection
+  let isDragging = false;
+  let dragAnchorKey = null;
+
+  function clearSelection(){
+    primaryKey = null; multiKeys.clear();
+    refreshSelectionClasses();
+  }
+  function selectSingle(key){
+    primaryKey = key; multiKeys.clear();
+    refreshSelectionClasses();
+  }
+  function addMulti(key){
+    multiKeys.add(key);
+    refreshSelectionClasses();
+  }
+  function keysMinMax(){
+    const arr = Array.from(multiKeys);
+    if(primaryKey) arr.push(primaryKey);
+    if(arr.length===0) return null;
+    arr.sort();
+    return {start: arr[0], end: arr[arr.length-1]};
+  }
+  function updateDrawerFromSelection(){
+    const mm = keysMinMax();
+    if(mm && typeof startDateInput!=='undefined' && startDateInput && endDateInput){
+      startDateInput.value = mm.start;
+      endDateInput.value = mm.end;
+    }
+  }
+  function refreshSelectionClasses(){
+    // strip old classes
+    dateToCell.forEach((cell)=>{ cell.classList.remove('selected-single','selected-multi','range'); });
+    // apply current
+    if(primaryKey){ const cell = dateToCell.get(primaryKey); if(cell) cell.classList.add('selected-single'); }
+    multiKeys.forEach(k=>{ const cell = dateToCell.get(k); if(cell) cell.classList.add('selected-multi'); });
+    updateDrawerFromSelection();
+  }
+  function setDragRange(toKey){
+    if(!dragAnchorKey) return;
+    // fill multiKeys with contiguous range between anchor and toKey
+    multiKeys.clear();
+    const a = parseYMD(dragAnchorKey), b = parseYMD(toKey);
+    const dir = a <= b ? 1 : -1;
+    let d = dir===1 ? new Date(a) : new Date(b);
+    const end = dir===1 ? b : a;
+    while(true){
+      multiKeys.add(keyOf(d));
+      if(d.getTime() === end.getTime()) break;
+      d.setDate(d.getDate()+1);
+    }
+    primaryKey = null;
+    refreshSelectionClasses();
+  }
+
+  function getSelectedKeys(){
+    const arr = Array.from(multiKeys || []);
+    if (typeof primaryKey !== 'undefined' && primaryKey) arr.push(primaryKey);
+    return Array.from(new Set(arr)).sort();
+  }
+function buildYear(){
     yearLabel.textContent = state.year;
     canvas.innerHTML = '';
     monthEls = []; dateToCell.clear(); selectedCell = null;
@@ -339,14 +671,43 @@ document.addEventListener('DOMContentLoaded', ()=>{
       const grid = document.createElement('div'); grid.className = 'month-grid';
       const mat = monthMatrix(state.year, m);
       mat.forEach(d=>{
-        const cell = document.createElement('div'); cell.className='cell';
+        const cell = document.createElement('div'); cell.className='cell'; cell.dataset.date = keyOf(d);
         if(d.getMonth()!==m) cell.classList.add('out');
         if(isSameDate(d,today)) cell.classList.add('today');
+        if(d.getMonth()===m){ const __dow=d.getDay(); if(__dow===0) cell.classList.add('sun'); else if(__dow===6) cell.classList.add('sat'); }
         const btn = document.createElement('button'); btn.className='daynum'; btn.type='button'; btn.textContent = d.getDate(); btn.ariaLabel = d.toDateString();
-        btn.addEventListener('click', (ev)=>{ ev.stopPropagation(); selectCell(cell); openDrawer(d); });
+        
+        // New selection handlers
+        btn.addEventListener('mousedown', (e)=>{
+          if(e.button!==0) return;
+          if(e.shiftKey){ /* start additive range drag */ isDragging = true; dragAnchorKey = keyOf(d); setDragRange(dragAnchorKey); }
+          else { /* start contiguous drag interpreted as multi */ isDragging = true; dragAnchorKey = keyOf(d); setDragRange(dragAnchorKey); }
+          e.preventDefault();
+        });
+        btn.addEventListener('mouseenter', (e)=>{
+          if(!isDragging) return;
+          setDragRange(keyOf(d));
+        });
+        btn.addEventListener('mouseup', (e)=>{
+          if(!isDragging) return;
+          isDragging = false;
+        });
+        btn.addEventListener('click', (ev)=>{
+          ev.stopPropagation();
+          const k = keyOf(d);
+          if(ev.shiftKey){
+            addMulti(k);
+          }else{
+            selectSingle(k);
+          }
+          openDrawer(d);
+        });
+btn.addEventListener('contextmenu', (e)=>{ e.preventDefault(); openDayColorMenu(cell, keyOf(d), e.clientX, e.clientY); });
         cell.appendChild(btn); grid.appendChild(cell);
         const k = keyOf(d); dateToCell.set(k, cell);
         if(events[k] && events[k].length){ setMarker(cell, events[k][0].color); }
+        if(getHoliday(currentCountry, d)){ setHolidayIcon(cell, true); }
+        if(dayColors[k]) applyDayColor(cell, dayColors[k]);
       });
       sec.appendChild(grid);
       canvas.appendChild(sec); monthEls.push(sec);
@@ -367,26 +728,33 @@ document.addEventListener('DOMContentLoaded', ()=>{
     monthEls.forEach(sec=> sec.classList.toggle('active', sec===closest));
   }
   canvas.addEventListener('scroll', setActiveMonthByScroll, {passive:true});
-
+  document.addEventListener('mouseup', (e)=>{ if(isDragging){ isDragging=false; } });
+  canvas.addEventListener('click', (e)=>{ if(e.target===canvas){ clearSelection(); } });
   function openDrawer(date){
-  try{ setEditPanel(false); }catch(e){}
-    exitEditMode();
+  exitEditMode();
     state.drawerDate = new Date(date);
     drawerTitle.textContent = `${dows[date.getDay()]} · ${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
-    startDateInput.value = toYMD(date);
-    endDateInput.value = toYMD(date);
+    const mmSel = keysMinMax();
+    if(mmSel){ startDateInput.value = mmSel.start; endDateInput.value = mmSel.end; }
+    else { startDateInput.value = toYMD(date); endDateInput.value = toYMD(date); }
+    
     const now = new Date();
     startInput.value = String(now.getHours()).padStart(2,'0') + ':00';
     endInput.value = String((now.getHours()+1)%24).padStart(2,'0') + ':00';
     titleInput.value = ''; locationInput.value=''; colorInput.value = '#74FBD6';
     renderDayHours(date);
-  try{ setEditPanel(false);}catch(e){}
-    drawer.classList.add('open'); drawer.setAttribute('aria-hidden','false');
+  drawer.classList.add('open'); drawer.setAttribute('aria-hidden','false');
   }
   function closeDrawer(){ drawer.classList.remove('open'); drawer.setAttribute('aria-hidden','true'); exitEditMode(); }
 
   function renderDayHours(date){
     drawerHours.innerHTML = '';
+    const holName = getHoliday(currentCountry, date);
+    if(holName){
+      const strip = document.createElement('div'); strip.className='holiday-strip';
+      strip.innerHTML = `<span class="tag">Public Holiday</span> ${holName}`;
+      drawerHours.appendChild(strip);
+    }
     const key = keyOf(date); const list = events[key] || [];
     if(!list.length){
       const boxL = document.createElement('div'); boxL.className='empty-box'; boxL.textContent='Empty Schedule';
@@ -421,7 +789,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
     const cell = dateToCell.get(key);
     if(!cell) return;
     cell.querySelectorAll('.event-dot').forEach(n=>n.remove());
-    if(events[key] && events[key].length){ setMarker(cell, events[key][0].color); }
+    if(events[key] && events[key].length){ setMarker(cell, events[key][0].color); } else { /* keep event marker removed if no events */ }
+    // refresh holiday icon state
+    const isHol = !!getHoliday(currentCountry, key);
+    setHolidayIcon(cell, isHol);
   }
 
   function deleteEvent(key, id){
@@ -484,16 +855,15 @@ document.addEventListener('DOMContentLoaded', ()=>{
     }
 
     titleInput.value='';
-    try{ if(__collapseAfterSubmit) setEditPanel(false);}catch(e){}
-});
+    });
 
   document.getElementById('drawerClose').addEventListener('click', closeDrawer);
-  canvas.addEventListener('click', closeDrawer);
+  
   window.addEventListener('keydown', (e)=>{
     if(e.key==='Escape'){
       if(searchOverlay.classList.contains('open')) closeSearch();
       else if(menuPanel.classList.contains('open')) closeMenu();
-      else closeDrawer();
+      // else closeDrawer();  // disabled: drawer only closes via its Close button
     }
   });
 
@@ -502,15 +872,26 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if (today.getFullYear() !== state.year){
       state.year = today.getFullYear();
       buildYear();
-setEditPanel(false);
+
     }
     const m = today.getMonth();
     monthEls[m].scrollIntoView({behavior:'smooth', block:'start'});
     setTimeout(()=> setActiveMonthByScroll(), 300);
   });
 
-  yearPrev.addEventListener('click', ()=>{ state.year--; buildYear(); canvas.scrollTop = 0; });
-  yearNext.addEventListener('click', ()=>{ state.year++; buildYear(); canvas.scrollTop = 0; });
+  yearPrev.addEventListener('click', ()=>{ state.year--; buildYear(); decorateMonthHolidays(); canvas.scrollTop = 0; });
+  yearNext.addEventListener('click', ()=>{ state.year++; buildYear(); decorateMonthHolidays(); canvas.scrollTop = 0; });
+
+  /* Country selector */
+  if (countrySelect){
+    countrySelect.addEventListener('change', ()=>{
+      currentCountry = countrySelect.value;
+      localStorage.setItem('country', currentCountry);
+      decorateMonthHolidays();
+      if(state.drawerDate) renderDayHours(state.drawerDate);
+    });
+  }
+
 
   /* Data & Sync (Menu) */
   function openMenu(){ menuPanel.classList.add('open'); scrim.classList.add('show'); }
@@ -523,7 +904,8 @@ setEditPanel(false);
   });
 
   function exportJSON(){
-    const blob = new Blob([JSON.stringify(events, null, 2)], {type:'application/json'});
+    const payload = { events, dayColors, country: currentCountry };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
     const a = document.createElement('a');
     const now = new Date();
     const fname = `calendar-${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}-${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}.json`;
@@ -540,13 +922,27 @@ setEditPanel(false);
     reader.onload = ()=>{
       try{
         const data = JSON.parse(reader.result);
-        if(importMode==='replace'){ events = {}; }
-        for(const [k, arr] of Object.entries(data||{})){
-          if(!Array.isArray(arr)) continue;
-          if(!events[k]) events[k] = [];
-          arr.forEach(ev=>{ if(!ev.id) ev.id = uid(); events[k].push(ev); });
+        if(data && data.events){
+          if(importMode==='replace'){ events = {}; dayColors = {}; }
+          for(const [k, arr] of Object.entries(data.events||{})){
+            if(!Array.isArray(arr)) continue;
+            if(!events[k]) events[k] = [];
+            arr.forEach(ev=>{ if(!ev.id) ev.id = uid(); events[k].push(ev); });
+          }
+          for(const [k, val] of Object.entries(data.dayColors||{})){
+            if(val) dayColors[k] = val; else delete dayColors[k];
+          }
+          if(data.country){ currentCountry = data.country; if(countrySelect) countrySelect.value = currentCountry; }
+          saveEvents(); saveDayColors(); buildYear(); decorateMonthHolidays(); closeMenu();
+        } else {
+          if(importMode==='replace'){ events = {}; }
+          for(const [k, arr] of Object.entries(data||{})){
+            if(!Array.isArray(arr)) continue;
+            if(!events[k]) events[k] = [];
+            arr.forEach(ev=>{ if(!ev.id) ev.id = uid(); events[k].push(ev); });
+          }
+          saveEvents(); buildYear(); decorateMonthHolidays(); closeMenu();
         }
-        saveEvents(); buildYear(); closeMenu();
       }catch(err){ alert('Invalid JSON.'); }
       importFile.value='';
     };
@@ -658,6 +1054,7 @@ setEditPanel(false);
   }
 
   buildYear();
+  decorateMonthHolidays();
   requestAnimationFrame(()=>{
     const m = new Date().getMonth();
     monthEls[m].scrollIntoView({behavior:'instant', block:'start'});
@@ -665,5 +1062,23 @@ setEditPanel(false);
   });
 })();
 </script>
+
+<div id="dayColorMenu" class="context-menu" aria-hidden="true" hidden>
+  <div class="swatches" id="dayColorSwatches">
+    <button class="swatch" data-color="#74FBD6" title="Mint"></button>
+    <button class="swatch" data-color="#2EA1FF" title="Azure"></button>
+    <button class="swatch" data-color="#A88BEB" title="Lavender"></button>
+    <button class="swatch" data-color="#FF9EC4" title="Pink"></button>
+    <button class="swatch" data-color="#FFD166" title="Amber"></button>
+    <button class="swatch" data-color="#7CF29C" title="Lime"></button>
+    <button class="swatch" data-color="#6C63FF" title="Indigo"></button>
+    <button class="swatch" data-color="#FF7A59" title="Coral"></button>
+  </div>
+  <div class="tools" id="dayColorTools">
+    <input type="color" id="dayColorPicker" value="#2EA1FF" />
+    <button id="dayColorClear" type="button">Clear</button>
+  </div>
+</div>
+
 </body>
 </html>
