@@ -156,9 +156,9 @@
 /* Country selector */
 .country-select{
   appearance:none;border:0;border-radius:12px;padding:8px 10px;
-  background:rgba(255,255,255,.16);color:#fff;font-weight:800;cursor:pointer;
+  background:rgba(255, 255, 255, 1);color:#153960;font-weight:800;cursor:pointer;
 }
-.country-select:hover{background:rgba(255,255,255,.22)}
+.country-select:hover{background:rgba(255,255,255,1)}
 
 /* Calendar holiday icon (top-left), and subtle day color tint */
 .cell.holiday .daynum{ color:#FFD166; }
@@ -304,7 +304,14 @@
         </div>
         <div class="right">
   <select id="countrySelect" class="country-select" aria-label="Country">
+    
     <option value="SG">🇸🇬 Singapore</option>
+    <option value="MY">🇲🇾 Malaysia</option>
+    <option value="CN">🇨🇳 China</option>
+    <option value="TW">🇹🇼 Taiwan</option>
+    <option value="JP">🇯🇵 Japan</option>
+    <option value="US">🇺🇸 United States</option>
+
   </select>
 </div>
       </nav>
@@ -473,6 +480,114 @@ document.addEventListener('DOMContentLoaded', ()=>{
         {date:'2025-12-25', name:"Christmas Day"}
       ]
     }
+    ,MY: {
+      2025: [
+        {date:'2025-01-01', name:"New Year's Day"},
+        {date:'2025-01-29', name:"Chinese New Year (Day 1)"},
+        {date:'2025-01-30', name:"Chinese New Year (Day 2)"},
+        {date:'2025-03-31', name:"Hari Raya Aidilfitri (Day 1)"},
+        {date:'2025-04-01', name:"Hari Raya Aidilfitri (Day 2)"},
+        {date:'2025-05-01', name:"Labour Day"},
+        {date:'2025-05-12', name:"Wesak Day"},
+        {date:'2025-06-02', name:"Agong's Birthday"},
+        {date:'2025-06-07', name:"Hari Raya Haji"},
+        {date:'2025-06-27', name:"Awal Muharram"},
+        {date:'2025-08-31', name:"Merdeka Day"},
+        {date:'2025-09-05', name:"Maulidur Rasul"},
+        {date:'2025-09-16', name:"Malaysia Day"},
+        {date:'2025-10-20', name:"Deepavali"},
+        {date:'2025-12-25', name:"Christmas Day"}
+      ]
+    }
+    ,CN: {
+      2025: [
+        {date:'2025-01-01', name:"New Year's Day"},
+        {date:'2025-01-28', name:"Spring Festival Holiday"},
+        {date:'2025-01-29', name:"Spring Festival Holiday"},
+        {date:'2025-01-30', name:"Spring Festival Holiday"},
+        {date:'2025-01-31', name:"Spring Festival Holiday"},
+        {date:'2025-02-01', name:"Spring Festival Holiday"},
+        {date:'2025-02-02', name:"Spring Festival Holiday"},
+        {date:'2025-02-03', name:"Spring Festival Holiday"},
+        {date:'2025-02-04', name:"Spring Festival Holiday"},
+        {date:'2025-04-04', name:"Qingming Festival"},
+        {date:'2025-04-05', name:"Qingming Festival"},
+        {date:'2025-04-06', name:"Qingming Festival"},
+        {date:'2025-05-01', name:"Labor Day Holiday"},
+        {date:'2025-05-02', name:"Labor Day Holiday"},
+        {date:'2025-05-03', name:"Labor Day Holiday"},
+        {date:'2025-05-04', name:"Labor Day Holiday"},
+        {date:'2025-05-05', name:"Labor Day Holiday"},
+        {date:'2025-05-31', name:"Dragon Boat Festival"},
+        {date:'2025-06-01', name:"Dragon Boat Festival"},
+        {date:'2025-06-02', name:"Dragon Boat Festival"},
+        {date:'2025-10-01', name:"National Day / Mid-Autumn"},
+        {date:'2025-10-02', name:"National Day / Mid-Autumn"},
+        {date:'2025-10-03', name:"National Day / Mid-Autumn"},
+        {date:'2025-10-04', name:"National Day / Mid-Autumn"},
+        {date:'2025-10-05', name:"National Day / Mid-Autumn"},
+        {date:'2025-10-06', name:"National Day / Mid-Autumn"},
+        {date:'2025-10-07', name:"National Day / Mid-Autumn"},
+        {date:'2025-10-08', name:"National Day / Mid-Autumn"}
+      ]
+    }
+    ,TW: {
+      2025: [
+        {date:'2025-01-01', name:"Republic Day"},
+        {date:'2025-01-27', name:"Lunar New Year Holiday"},
+        {date:'2025-01-28', name:"Lunar New Year's Eve"},
+        {date:'2025-01-29', name:"Lunar New Year Day"},
+        {date:'2025-01-30', name:"Lunar New Year Holiday"},
+        {date:'2025-01-31', name:"Lunar New Year Holiday"},
+        {date:'2025-02-01', name:"Lunar New Year Holiday"},
+        {date:'2025-02-02', name:"Lunar New Year Holiday"},
+        {date:'2025-02-28', name:"Peace Memorial Day"},
+        {date:'2025-04-04', name:"Children's Day & Tomb Sweeping Day"},
+        {date:'2025-05-01', name:"Labor Day (private sector)"},
+        {date:'2025-05-31', name:"Dragon Boat Festival"},
+        {date:'2025-10-06', name:"Mid-Autumn Festival"},
+        {date:'2025-10-10', name:"National Day"}
+      ]
+    }
+    ,JP: {
+      2025: [
+        {date:'2025-01-01', name:"New Year's Day"},
+        {date:'2025-01-13', name:"Coming of Age Day"},
+        {date:'2025-02-11', name:"National Foundation Day"},
+        {date:'2025-02-23', name:"Emperor's Birthday"},
+        {date:'2025-02-24', name:"Emperor's Birthday (Observed)"},
+        {date:'2025-03-20', name:"Vernal Equinox Day"},
+        {date:'2025-04-29', name:"Shōwa Day"},
+        {date:'2025-05-03', name:"Constitution Memorial Day"},
+        {date:'2025-05-04', name:"Greenery Day"},
+        {date:'2025-05-05', name:"Children's Day"},
+        {date:'2025-05-06', name:"Holiday (Observed)"},
+        {date:'2025-07-21', name:"Marine Day"},
+        {date:'2025-08-11', name:"Mountain Day"},
+        {date:'2025-09-15', name:"Respect for the Aged Day"},
+        {date:'2025-09-23', name:"Autumnal Equinox Day"},
+        {date:'2025-10-13', name:"Sports Day"},
+        {date:'2025-11-03', name:"Culture Day"},
+        {date:'2025-11-23', name:"Labor Thanksgiving Day"},
+        {date:'2025-11-24', name:"Labor Thanksgiving (Observed)"}
+      ]
+    }
+    ,US: {
+      2025: [
+        {date:'2025-01-01', name:"New Year's Day"},
+        {date:'2025-01-20', name:"Martin Luther King Jr. Day"},
+        {date:'2025-02-17', name:"Washington's Birthday"},
+        {date:'2025-05-26', name:"Memorial Day"},
+        {date:'2025-06-19', name:"Juneteenth National Independence Day"},
+        {date:'2025-07-04', name:"Independence Day"},
+        {date:'2025-09-01', name:"Labor Day"},
+        {date:'2025-10-13', name:"Columbus Day"},
+        {date:'2025-11-11', name:"Veterans Day"},
+        {date:'2025-11-27', name:"Thanksgiving Day"},
+        {date:'2025-12-25', name:"Christmas Day"}
+      ]
+    }
+
   };
   let currentCountry = localStorage.getItem('country') || 'SG';
   const countrySelect = document.getElementById('countrySelect');
