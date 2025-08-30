@@ -380,6 +380,64 @@
   </main>
 
 <script>
+/* --- Confined scrollIntoView: only scroll the nearest scrollable ancestor (never the parent page) --- */
+(function(){
+  var nativeFocus = HTMLElement.prototype.focus;
+  function getScrollParent(el){
+    var p = el && el.parentElement;
+    while(p && p !== document.body){
+      var cs = getComputedStyle(p);
+      if(/auto|scroll/i.test(cs.overflowY) || /auto|scroll/i.test(cs.overflow)) return p;
+      p = p.parentElement;
+    }
+    return null;
+  }
+  function smoothScrollTo(el, to, duration){
+    try{
+      var start = el.scrollTop, change = to - start;
+      if (duration <= 0 || Math.abs(change) < 1){ el.scrollTop = to; return; }
+      var startTime = performance.now();
+      function step(now){
+        var t = Math.min(1, (now - startTime) / duration);
+        var eased = t < 0.5 ? 2*t*t : -1 + (4 - 2*t) * t;
+        el.scrollTop = Math.round(start + change * eased);
+        if (t < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }catch(e){ el.scrollTop = to; }
+  }
+  Element.prototype.scrollIntoView = function(options){
+    try{
+      var sp = getScrollParent(this);
+      if(!sp) return; // no internal scroller -> do nothing (prevents page scroll)
+      var spRect = sp.getBoundingClientRect();
+      var elRect = this.getBoundingClientRect();
+      var current = sp.scrollTop;
+      var elemTop = current + (elRect.top - spRect.top);
+      var elemBottom = current + (elRect.bottom - spRect.top);
+      var target = current;
+      var behavior = 'auto', block = 'nearest';
+      if (typeof options === 'boolean'){ block = options ? 'start' : 'nearest'; }
+      else if (options && typeof options === 'object'){ behavior = options.behavior || 'auto'; block = options.block || 'nearest'; }
+      if (block === 'start') target = elemTop;
+      else if (block === 'center') target = Math.round(elemTop - (spRect.height - (elRect.height||0))/2);
+      else if (block === 'end') target = Math.max(0, elemBottom - spRect.height);
+      else {
+        if (elRect.top < spRect.top) target = elemTop;
+        else if (elRect.bottom > spRect.bottom) target = Math.max(0, elemBottom - spRect.height);
+      }
+      target = Math.max(0, target);
+      if (behavior === 'smooth') smoothScrollTo(sp, target, 280);
+      else sp.scrollTop = target;
+    }catch(e){ /* swallow to avoid affecting host */ }
+  };
+  // Prevent focus from scrolling outer page
+  HTMLElement.prototype.focus = function(opts){
+    try{ nativeFocus.call(this, Object.assign({}, opts||{}, {preventScroll:true})); }
+    catch(e){ nativeFocus.call(this); }
+  };
+})();
+
 (function(){
   const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   const dows = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
