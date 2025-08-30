@@ -1170,11 +1170,7 @@ btn.addEventListener('contextmenu', (e)=>{ e.preventDefault(); openDayColorMenu(
 
   buildYear();
   decorateMonthHolidays();
-  requestAnimationFrame(()=>{
-    const m = new Date().getMonth();
-    monthEls[m].scrollIntoView({behavior:'instant', block:'start'});
-    setActiveMonthByScroll();
-  });
+  
 })();
 </script>
 
