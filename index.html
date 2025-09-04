@@ -3,13 +3,15 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Colorful Calendar – Year Stream</title>
+  <title>Colorful Calendar</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
   <style>
     :root{
       --device-w: min(100vw, 440px);
+      --gantt-w: min(60vw, 860px);
+      --gcol: 20px; /* gantt day column width */
       --device-h: min(96vh, 880px);
       --tile: calc(var(--device-w) / 7);
       --type-xs: 11px;
@@ -33,7 +35,7 @@
       display:flex;align-items:center;justify-content:center;color:#0f172a;
     }
 
-    .app{width:var(--device-w);height:var(--device-h);background:#0B2346;border-radius:16px;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.25);display:flex;flex-direction:column;position:relative}
+    .app{width:calc(var(--device-w) + var(--gantt-w) + 28px);height:var(--device-h);background:#0B2346;border-radius:16px;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.25);display:flex;flex-direction:column;position:relative}
 
     .topbar{position:sticky;top:0;z-index:var(--z-topbar);height:var(--header-h);background:#153960;color:#fff;padding:12px 14px;display:flex;flex-direction:column;gap:12px;box-shadow:0 2px 0 rgba(0,0,0,.12)}
     .navrow{display:flex;align-items:center;gap:12px}
@@ -82,19 +84,27 @@
       "dstart dend"
       "tstart tend"
       "location location"
+      "proj stage"
+      "task task"
       "color submit"}
     @media (min-width: 430px){
-      .event-form{grid-template-columns:1fr 1fr 1fr 1fr;grid-template-areas:
-        "title title title title"
-        "dstart dstart dend dend"
-        "tstart tstart tend tend"
-        "location location color submit"}
-    }
+  .event-form{grid-template-columns:1fr 1fr 1fr 1fr;grid-template-areas:
+    "title title title title"
+    "dstart dstart dend dend"
+    "tstart tstart tend tend"
+    "location location location location"
+    "proj proj stage stage"
+    "task task task task"
+    "color submit submit submit"}
+}
     .event-form input[type="text"],
     .event-form input[type="date"],
     .event-form input[type="time"],
     .event-form input[type="color"]{min-width:0;width:100%;padding:12px 14px;border-radius:12px;border:0;background:rgba(255,255,255,.14);color:#fff;font-size:15px}
     .title-field{grid-area:title}
+    #taskProject{grid-area:proj}
+    #taskStage{grid-area:stage}
+    .task-flag{grid-area:task}
     .date-start{grid-area:dstart}
     .date-end{grid-area:dend}
     .time-start{grid-area:tstart}
@@ -102,6 +112,8 @@
     .location-field{grid-area:location}
     .color-field{grid-area:color; min-width:56px}
     .submit{grid-area:submit;justify-self:end;appearance:none;border:0;border-radius:12px;padding:10px 12px;background:#fff;color:#153960;font-weight:800;cursor:pointer}
+    .submit-row{grid-area:submit;display:flex;justify-content:flex-end;gap:8px;align-items:center}
+    .submit.danger{background:#FF6B6B;color:#fff;}
 
     .day-hours{display:grid;grid-template-columns:82px 1fr;gap:8px 12px}
     .hour-lbl{display:grid;place-items:center;background:rgba(255,255,255,.18);border-radius:10px;padding:8px 0;font-size:12px}
@@ -152,13 +164,6 @@
 }
 .event-form.collapsed { display:none !important; }
 [hidden]{display:none !important;}
-
-/* Country selector */
-.country-select{
-  appearance:none;border:0;border-radius:12px;padding:8px 10px;
-  background:rgba(255, 255, 255, 1);color:#153960;font-weight:800;cursor:pointer;
-}
-.country-select:hover{background:rgba(255,255,255,1)}
 
 /* Calendar holiday icon (top-left), and subtle day color tint */
 .cell.holiday .daynum{ color:#FFD166; }
@@ -283,11 +288,165 @@
   box-shadow:0 1px 2px rgba(0,0,0,.25);
 }
 
+
+/* === Split screen layout === */
+.work{flex:1 1 auto; min-height:0; display:flex; gap:12px; padding:0 8px 8px; align-items:stretch;}
+.calendar-wrap{display:flex; flex-direction:column; flex:0 0 var(--device-w); width:var(--device-w); min-width:var(--device-w); min-height:0;}
+.calendar-wrap > .weekday-row{position:sticky; top:var(--header-h); z-index:var(--z-weekbar);}
+.calendar-wrap > .canvas{flex:1; min-height:0; overflow:auto;}
+.gantt-shell{flex:1 1 auto; min-width:0; display:flex; flex-direction:column; min-height:0; color:#fff;}
+.gantt-head{flex:0 0 auto; display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 10px; background:rgba(255,255,255,.10); border:1px solid rgba(255,255,255,.14); border-radius:12px; margin:6px 0;}
+.gantt-head .title{font-size:14px; font-weight:900; text-transform:uppercase; letter-spacing:.06em;}
+.gantt-xhead{overflow:hidden; width:100%;}
+.gantt-months{height:22px;}
+.gantt-monthsInner{position:relative; height:22px; display:flex;}
+.gantt-monthsInner .m{flex:0 0 auto; height:100%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800; opacity:.95; border-right:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); padding:0 4px;}
+.gantt-body{flex:1 1 auto; min-height:0; display:grid; grid-template-columns: 220px 1fr; gap:8px;}
+.gantt-left{overflow:auto; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12); border-radius:10px; position:relative;}
+.gantt-tree{list-style:none; margin:0; padding:0;}
+.gantt-tree .node{display:flex; align-items:center; gap:8px; padding:8px 10px; border-bottom:1px solid rgba(255,255,255,.08); font-weight:800;}
+.gantt-tree .node .caret{width:16px; text-align:center; cursor:pointer; opacity:.9;}
+.gantt-tree .stage{padding-left:28px; font-weight:700; opacity:.95; height:36px; display:flex; align-items:center;}
+.gantt-xbody{overflow-x:auto; overflow-y:hidden; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12); border-radius:10px; position:relative;}
+.gantt-grid{position:relative; width: calc(var(--gcol) * var(--days)); min-height: var(--grid-h, 400px); background-image: repeating-linear-gradient(to right, rgba(255,255,255,.08) 0, rgba(255,255,255,.08) var(--gcol), rgba(255,255,255,.04) var(--gcol), rgba(255,255,255,.04) calc(var(--gcol)*2));}
+.gantt-grid .rowline{position:absolute; left:0; right:0; height:36px; border-bottom:1px solid rgba(255,255,255,.08);}
+.gantt-grid .bar{position:absolute; height:22px; border-radius:8px; display:flex; align-items:center; padding:0 8px; font-size:12px; font-weight:900; cursor:grab; box-shadow:0 2px 6px rgba(0,0,0,.3);}
+.gantt-grid .bar .label{white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:220px;}
+.gantt-grid .bar .handles{margin-left:auto; display:flex; gap:4px;}
+.gantt-grid .bar .h{width:8px; height:14px; background:rgba(0,0,0,.25); border-radius:2px; cursor:ew-resize;}
+.gantt-grid .bar:active{cursor:grabbing;}
+/* Sticky months alignment with timeline */
+.gantt-xbody::-webkit-scrollbar{height:12px}
+
+
+/* Localize calendar header & overlays to the left column */
+.calendar-wrap > .topbar{width:100%; max-width:var(--device-w); margin:0 auto 0px auto; border-radius:0px;}
+.calendar-wrap .scrim{position:absolute; inset:0; width:100%; height:100%;}
+.calendar-wrap{position:relative;}
+.calendar-wrap .drawer{left:0; right:auto; width:100%; max-width:var(--device-w);}
+.calendar-wrap .sidepanel{left:0; right:auto; width:100%; max-width:var(--device-w);}
+
+
+/* Center the year toggle perfectly under the "Calendar" title */
+.topbar{ position:relative; }
+.topbar .country-select{
+  position:absolute;
+  right:10px;
+  top:50%;
+  transform:translateY(-50%);
+  z-index:3;
+}
+
+/* Layout—make the controls row a flex line */
+.topbar .navrow.controls{
+  display:flex;
+  align-items:center;
+  position:relative; /* keeps the centered pill positioned within the bar */
+}
+
+/* Keep the year toggle perfectly centered and not blocking clicks on the right */
+.topbar .center{
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  pointer-events:none;
+}
+.topbar .center > *{ pointer-events:auto; }
+
+/* Push the right group to the far edge */
+.topbar .navrow.controls .right{
+  margin-left:auto;           /* this is what actually pushes it right */
+  display:flex;
+  align-items:center;
+  gap:8px;
+  z-index:3;                  /* sits above the centered pill */
+}
+
+/* Country select: sit in the right group and align to the edge */
+.topbar .navrow.controls .right .country-select{
+  margin-left:auto; /* ensures it hugs the right even if other items appear */
+}
+
+.topbar .year-toggle { display:flex; align-items:center; gap:8px; }
+
+/* Uniform row heights so labels and bars align */
+.gantt-tree .node{height:36px; padding:0 10px; display:flex; align-items:center;}
+.gantt-tree .stage{height:36px; padding-left:28px; display:flex; align-items:center;}
+
+
+/* Keep controls row positioned relative for center absolute alignment */
+.navrow.controls{position:relative;}
+
+
+/* Month background bands behind the timeline */
+.gantt-xbody{position:relative;}
+.gantt-month-bg{position:absolute; inset:0 auto 0 0; height:100%; display:flex; pointer-events:none; z-index:0;}
+.gantt-month-bg .m{flex:0 0 auto; height:100%;}
+/* Raise grid above month background */
+.gantt-grid{position:relative; z-index:1;}
+/* Cursor hint for draggable header */
+.gantt-xhead{cursor:grab;}
+.gantt-xhead.dragging{cursor:grabbing;}
+
+
+/* Task editing badge */
+#taskModeBadge{display:none; align-items:center; gap:8px; font-weight:900; text-transform:uppercase; font-size:12px; background:rgba(116,251,214,.15); border:1px solid rgba(116,251,214,.5); padding:6px 10px; border-radius:999px; margin:6px 0;}
+body.taskmode #taskModeBadge{display:inline-flex;}
+
+
+/* Ensure center overlay doesn't block the right controls */
+.navrow.controls{position:relative;}
+.topbar .center{position:absolute; left:50%; transform:translateX(-50%); pointer-events:none;}
+.topbar .center .year-toggle{pointer-events:auto;}
+.navrow.controls .right{position:relative; z-index:3;}
+/* Country select visible styling */
+.country-select{appearance:none; background:rgba(255,255,255,.85); color:#111; border:1px solid rgba(0,0,0,.2); border-radius:10px; padding:6px 10px; font-weight:800; min-width:56px; width:auto;}
+.country-select:focus{outline:2px solid rgba(255,255,255,.6); outline-offset:2px;}
+.country-select:hover{background:rgba(255,255,255,1)}
+/* Compact country select to short code */
+.country-select option { font-weight:800; }
+
+/* Gantt context menu */
+.gctx {
+  position: fixed; z-index: 9999;
+  display: none; min-width: 140px;
+  background: rgba(18,18,18,.95); color: #fff;
+  border: 1px solid rgba(255,255,255,.2); border-radius: 10px;
+  padding: 6px; box-shadow: 0 8px 30px rgba(0,0,0,.45);
+}
+.gctx .item { padding: 8px 10px; border-radius: 8px; font-weight: 800; cursor: pointer; }
+.gctx .item:hover { background: rgba(255,255,255,.1); }
+
+#ganttTree .stage.drag-over{outline:2px dashed var(--accent,#2EA1FF); outline-offset:-2px;}
+
+
+
+/* Gantt: align month header with grid columns & bar rows */
+.gantt-xhead{ padding-left:1px; }                /* compensate xbody border-left */
+.gantt-months{ height:36px; }
+.gantt-monthsInner{ height:36px; }
+.gantt-monthsInner .m{ height:36px; display:flex; align-items:center; }
+.gantt-grid .rowline{ height:36px; }             /* ensure row lines match */
+
+
+/* Dedicated right-side drawer confined to Gantt panel */
+.gantt-shell .drawer.right{ left:auto; right:0; width:min(520px, 48vw); max-width:520px; }
+/* Keep calendar drawer confined to the left panel */
+.calendar-wrap .drawer{ left:0; right:auto; width:100%; max-width:var(--device-w); }
+
+
+/* Inline editable styling */
+#ganttTree .label.editable { outline: none; border-radius: 6px; padding: 0 4px; }
+#ganttTree .label.editable:focus { background: rgba(255,255,255,0.08); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.25); }
 </style>
 </head>
 <body>
   <main class="app" aria-label="Calendar application">
-    <header class="topbar">
+    
+    
+    <div class="work">
+      <div class="calendar-wrap">
+        <header class="topbar">
       <nav class="navrow">
         <button class="btn icon" id="menuBtn" aria-label="Menu">≡</button>
         <div class="title">Calendar</div>
@@ -305,21 +464,127 @@
         <div class="right">
   <select id="countrySelect" class="country-select" aria-label="Country">
     
-    <option value="SG">🇸🇬 Singapore</option>
-    <option value="MY">🇲🇾 Malaysia</option>
-    <option value="CN">🇨🇳 China</option>
-    <option value="TW">🇹🇼 Taiwan</option>
-    <option value="JP">🇯🇵 Japan</option>
-    <option value="US">🇺🇸 United States</option>
+    <option value="SG">SG</option>
+    <option value="MY">MY</option>
+    <option value="CN">CN</option>
+    <option value="TW">TW</option>
+    <option value="JP">JP</option>
+    <option value="US">US</option>
 
   </select>
 </div>
       </nav>
     </header>
-    <div class="weekday-row"><div>SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div></div>
-    <section class="canvas" id="canvas" role="region" aria-live="polite"></section>
+<div class="weekday-row"><div>SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div></div>
+        <section class="canvas" id="canvas" role="region" aria-live="polite"></section>
+      <aside class="drawer" id="drawer" aria-hidden="true">
+      <div class="drawer-header">
+        <div class="drawer-title" id="drawerTitle">Events</div>
+        <span id="taskModeBadge" style="display:none;margin-left:10px;padding:4px 10px;border-radius:999px;border:1px solid rgba(116,251,214,.6);background:rgba(116,251,214,.16);font-weight:900;text-transform:uppercase;font-size:12px">Gantt Task</span>
+        <button class="drawer-close" id="drawerClose">Close</button>
+      </div>
+      <div class="drawer-body">
+        <div class="edit-panel" id="editPanel">
+  <button id="editPanelToggle" aria-expanded="false" aria-controls="eventForm">
+    Show edit panel ▼
+  </button>
+</div>
+<form class="event-form collapsed" id="eventForm" hidden>
+          <input type="text" id="eventTitle" class="title-field" placeholder="Add an event" required />
+          <input type="date" id="eventStartDate" class="date-start" />
+          <input type="date" id="eventEndDate" class="date-end" />
+          <input type="time" id="eventStart" class="time-start" value="09:00" />
+          <input type="time" id="eventEnd" class="time-end" value="10:00" />
+          <input type="text" id="eventLocation" class="location-field" placeholder="Location" />
+          <select id="taskProject" class="stage-field">
+            <option value="">-- Project (optional) --</option>
+            <option>Project A</option>
+            <option>Project B</option>
+            <option>Project C</option>
+          </select>
+          <select id="taskStage" class="stage-field">
+            <option value="">-- Stage (optional) --</option>
+            <option>Project Pitch</option>
+            <option>Research</option>
+            <option>Lead Generation</option>
+            <option>Pre-Production</option>
+            <option>Production</option>
+            <option>Post-Production</option>
+            <option>Social Media Distribution</option>
+            <option>Data Analysis</option>
+          </select>
+          <label class="task-flag" style="display:flex;align-items:center;gap:8px">
+            <input type="checkbox" id="taskFlag" /> <span>Task (sync with Gantt)</span>
+          </label>
 
-    <div class="scrim" id="scrim"></div>
+          <input type="color" id="eventColor" class="color-field" value="#74FBD6" title="Color" />
+          <button class="submit" id="submitBtn" type="submit">Add</button>
+        </form>
+        <div class="day-hours" id="drawerHours"></div>
+      </div>
+    </aside>
+</div>
+<div class="scrim" id="scrim"></div>
+
+
+
+      <aside class="gantt-shell" id="gantt">
+        <div class="gantt-head">
+          <div class="title">Gantt</div>
+          <div class="gantt-xhead"><div class="gantt-months"><div class="gantt-monthsInner" id="ganttMonths"></div></div></div>
+        </div>
+        <div class="gantt-body">
+          <div class="gantt-left">
+            <ul class="gantt-tree" id="ganttTree"></ul>
+          </div>
+          <div class="gantt-xbody" id="ganttXBody">
+            <div class="gantt-month-bg" id="ganttMonthBG"></div>
+            <div class="gantt-grid" id="ganttGrid"></div>
+          </div>
+        </div>
+      
+        <!-- Gantt Task Drawer -->
+        <aside class="drawer right" id="taskDrawer" aria-hidden="true">
+          <div class="drawer-header">
+            <div class="drawer-title" id="taskDrawerTitle">Task</div>
+            <button class="drawer-close" id="taskDrawerClose" type="button">Close</button>
+          </div>
+          <div class="drawer-body">
+            <form class="event-form" id="taskForm">
+              <input type="text" id="tTitle" class="title-field" placeholder="Task title" required />
+              <input type="date" id="tStartDate" class="date-start" />
+              <input type="date" id="tEndDate" class="date-end" />
+              <input type="time" id="tStartTime" class="time-start" value="09:00" />
+              <input type="time" id="tEndTime" class="time-end" value="10:00" />
+              <input type="text" id="tLocation" class="location-field" placeholder="Location (optional)" />
+              <select id="tProject" class="stage-field">
+                <option value="">-- Project --</option>
+                <option>Project A</option>
+                <option>Project B</option>
+                <option>Project C</option>
+              </select>
+              <select id="tStage" class="stage-field">
+                <option value="">-- Stage --</option>
+                <option>Project Pitch</option>
+                <option>Research</option>
+                <option>Lead Generation</option>
+                <option>Pre-Production</option>
+                <option>Production</option>
+                <option>Post-Production</option>
+                <option>Social Media Distribution</option>
+                <option>Data Analysis</option>
+              </select>
+              <input type="color" id="tColor" class="color-field" value="#74FBD6" title="Color" />
+              <div class="submit-row"><button class="submit" id="tSubmitBtn" type="submit">Save Task</button>
+<button class="submit danger" id="tDeleteBtn" type="button">Delete Task</button></div>
+            </form>
+          </div>
+        </aside>
+</aside>
+    </div>
+    
+
+    
 
     <aside class="side" id="menuPanel" aria-hidden="true">
       <header>
@@ -353,30 +618,7 @@
       </div>
     </div>
 
-    <aside class="drawer" id="drawer" aria-hidden="true">
-      <div class="drawer-header">
-        <div class="drawer-title" id="drawerTitle">Events</div>
-        <button class="drawer-close" id="drawerClose">Close</button>
-      </div>
-      <div class="drawer-body">
-        <div class="edit-panel" id="editPanel">
-  <button id="editPanelToggle" aria-expanded="false" aria-controls="eventForm">
-    Show edit panel ▼
-  </button>
-</div>
-<form class="event-form collapsed" id="eventForm" hidden>
-          <input type="text" id="eventTitle" class="title-field" placeholder="Add an event" required />
-          <input type="date" id="eventStartDate" class="date-start" />
-          <input type="date" id="eventEndDate" class="date-end" />
-          <input type="time" id="eventStart" class="time-start" value="09:00" />
-          <input type="time" id="eventEnd" class="time-end" value="10:00" />
-          <input type="text" id="eventLocation" class="location-field" placeholder="Location" />
-          <input type="color" id="eventColor" class="color-field" value="#74FBD6" title="Color" />
-          <button class="submit" id="submitBtn" type="submit">Add</button>
-        </form>
-        <div class="day-hours" id="drawerHours"></div>
-      </div>
-    </aside>
+    
   </main>
 
 <script>
@@ -489,7 +731,666 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const endInput = document.getElementById('eventEnd');
   const locationInput = document.getElementById('eventLocation');
   const colorInput = document.getElementById('eventColor');
-  const submitBtn = document.getElementById('submitBtn');
+// === Gantt model & sync ===
+
+  // Toggle task mode badge visibility
+  (function(){
+    const badge = document.getElementById('taskModeBadge');
+    const mo = new MutationObserver(()=>{
+      if(!badge) return;
+      const on = document.body.classList.contains('taskmode');
+      badge.style.display = on ? 'inline-flex' : 'none';
+    });
+    mo.observe(document.body, { attributes:true, attributeFilter:['class'] });
+  })();
+
+  const STAGES = ["Project Pitch","Research","Lead Generation","Pre-Production","Production","Post-Production","Social Media Distribution","Data Analysis"];
+function loadStageConfig(){ try{ const a = JSON.parse(localStorage.getItem('cc_stage_list')); if(Array.isArray(a) && a.length){ STAGES.splice(0, STAGES.length, ...a); } }catch(_){} }
+function saveStageConfig(){ try{ localStorage.setItem('cc_stage_list', JSON.stringify(STAGES)); }catch(_){} }
+window.addEventListener('load', loadStageConfig);
+  const STAGE_COLORS = {
+    "Project Pitch":"#74FBD6","Research":"#A88BEB","Lead Generation":"#2EA1FF","Pre-Production":"#FFD166",
+    "Production":"#FF7A59","Post-Production":"#FF9EC4","Social Media Distribution":"#7CF29C","Data Analysis":"#6C63FF"
+  };
+
+  const MONTH_COLORS = ['#56D7C7', '#E5A4E3', '#7FE3A4', '#F1E184', '#FFD36A', '#FF9E7A', '#F478B9', '#C07AF1', '#7A7FEF', '#F8D86E', '#EC6F8E', '#4660B9'];
+  const PROJECTS = ["Project A","Project B","Project C"];
+  let projectState = JSON.parse(localStorage.getItem('GANTT_PROJECT_STATE')||'{}'); // {Project A: {open:true}}
+  function saveProjectState(){ localStorage.setItem('GANTT_PROJECT_STATE', JSON.stringify(projectState)); }
+
+  const TASKS_KEY = 'yearStreamTasksV1';
+  function loadTasks(){ try{ return JSON.parse(localStorage.getItem(TASKS_KEY))||{} }catch(e){ return {} } }
+  function saveTasks(){ localStorage.setItem(TASKS_KEY, JSON.stringify(tasks)); }
+  let tasks = loadTasks(); // {id:{id,title,color,project,stage,start,end,startTime,endTime,location}}
+
+
+// === Separate Gantt Task Drawer (right) ===
+const taskDrawer = document.getElementById('taskDrawer');
+const taskDrawerTitle = document.getElementById('taskDrawerTitle');
+const taskForm = document.getElementById('taskForm');
+const tTitle = document.getElementById('tTitle');
+const tStartDate = document.getElementById('tStartDate');
+const tEndDate = document.getElementById('tEndDate');
+const tStartTime = document.getElementById('tStartTime');
+const tEndTime = document.getElementById('tEndTime');
+const tLocation = document.getElementById('tLocation');
+const tProject = document.getElementById('tProject');
+const tStage = document.getElementById('tStage');
+const tColor = document.getElementById('tColor');
+let ganttEditingId = null;
+
+function openTaskDrawer(task){
+  ganttEditingId = task ? task.id : null;
+  const title = task ? `Task · ${(task.project||'')}${(task.project && task.stage ? ' — ' : '')}${task.stage||''}` : 'New Task';
+  if(taskDrawerTitle) taskDrawerTitle.textContent = title;
+
+  tTitle.value = (task && task.title) || '';
+  tStartDate.value = (task && task.start) || (state.drawerDate ? toYMD(state.drawerDate) : toYMD(new Date(state.year,0,1)));
+  tEndDate.value = (task && task.end) || tStartDate.value;
+  tStartTime.value = (task && task.startTime) || '09:00';
+  tEndTime.value = (task && task.endTime) || '10:00';
+  tLocation.value = (task && task.location) || '';
+  tProject.value = (task && task.project) || '';
+  tStage.value = (task && task.stage) || '';
+  tColor.value = (task && task.color) || '#74FBD6';
+
+  taskDrawer.classList.add('open');
+  taskDrawer.setAttribute('aria-hidden','false');
+}
+function closeTaskDrawer(){
+  ganttEditingId = null;
+  if(taskDrawer){ taskDrawer.classList.remove('open'); taskDrawer.setAttribute('aria-hidden','true'); }
+}
+const taskDrawerClose = document.getElementById('taskDrawerClose');
+if(taskDrawerClose) taskDrawerClose.addEventListener('click', closeTaskDrawer);
+const tDeleteBtn = document.getElementById('tDeleteBtn');
+function toggleTaskDeleteBtn(){
+  if (!tDeleteBtn) return;
+  tDeleteBtn.style.display = (ganttEditingId && tasks[ganttEditingId]) ? 'inline-block' : 'none';
+}
+if (tDeleteBtn){
+  tDeleteBtn.addEventListener('click', ()=>{
+    if (!ganttEditingId || !tasks[ganttEditingId]) return;
+    if (!confirm('Delete this task and all mirrored calendar events?')) return;
+    const id = ganttEditingId;
+    delete tasks[id]; saveTasks();
+    removeTaskEventInstances(id); saveEvents();
+    try{ if (typeof renderGantt === 'function') renderGantt(); try{ refreshTaskPickers(); }catch(_){ } }catch(_){}
+    if (state.drawerDate) renderDayHours(state.drawerDate);
+    closeTaskDrawer();
+  });
+}
+
+if(taskForm) taskForm.addEventListener('submit', (e)=>{
+  e.preventDefault();
+  const base = {
+    title: (tTitle.value||'').trim(),
+    project: tProject.value,
+    stage: tStage.value,
+    start: tStartDate.value, end: tEndDate.value,
+    startTime: tStartTime.value, endTime: tEndTime.value,
+    color: tColor.value, location: tLocation.value
+  };
+  if(!base.title || !base.project || !base.stage || !base.start || !base.end){
+    alert('Please fill Title, Project, Stage, Start & End.'); return;
+  }
+  if(ganttEditingId && tasks[ganttEditingId]){
+    const tt = tasks[ganttEditingId];
+    Object.assign(tt, base);
+    tasks[tt.id]=tt;
+    saveTasks();
+    syncTaskToEvents(tt);
+  } else {
+    const id = 't'+Math.random().toString(36).slice(2,8)+Date.now().toString(36);
+    const newT = Object.assign({id}, base);
+    tasks[id] = newT;
+    saveTasks();
+    syncTaskToEvents(newT);
+  }
+  renderGantt(); try{ refreshTaskPickers(); }catch(_){ }
+  closeTaskDrawer();
+});
+
+
+// --- Gantt task helpers ---
+function datesOverlap(aStart, aEnd, bStart, bEnd){
+  const as = parseYMD(aStart), ae = parseYMD(aEnd);
+  const bs = parseYMD(bStart), be = parseYMD(bEnd);
+  return !(ae < bs || as > be);
+}
+function hasStageDayConflict(candidate, skipId){
+  for (const t of Object.values(tasks)){
+    if (skipId && t.id === skipId) continue;
+    if (t.project === candidate.project && t.stage === candidate.stage){
+      if (datesOverlap(candidate.start, candidate.end, t.start, t.end)) return true;
+    }
+  }
+  return false;
+}
+
+
+  // Utility
+  function dayOfYear(d){ const start = new Date(d.getFullYear(),0,1); return Math.floor((d - start)/86400000)+1; }
+  function daysInYear(y){ return ((y%4===0 && y%100!==0) || (y%400===0)) ? 366 : 365; }
+
+  function ensureProjectState(){ PROJECTS.forEach(p=>{ if(!projectState[p]) projectState[p]={open:true}; }); saveProjectState(); }
+  ensureProjectState();
+
+  // Sync task <-> calendar events
+  function removeTaskEventInstances(taskId){
+    const touched = new Set();
+    for (const [k, list] of Object.entries(events)) {
+      const keep = list.filter(e => e.taskId !== taskId);
+      if (keep.length !== list.length) { // something changed
+        touched.add(k);
+      }
+      if (keep.length) events[k] = keep; else delete events[k];
+    }
+    // refresh day markers for affected keys
+    touched.forEach(k => updateMarkerForKey(k));
+  }
+  
+  function syncTaskToEvents(task){
+  if (!task || !task.start || !task.end) return;
+
+  // 1) Remove previous mirrored events for this task
+  removeTaskEventInstances(task.id);
+
+  // 2) Recreate events for each day in the task's range
+  const s = parseYMD(task.start), e = parseYMD(task.end);
+  for (let d = new Date(s); d <= e; d = addDays(d, 1)) {
+    const k = keyOf(d);
+    if (!events[k]) events[k] = [];
+    events[k].push({
+      id: uid(),
+      title: task.title,
+      start: task.startTime || '09:00',
+      end:   task.endTime   || '10:00',
+      color: task.color || (STAGE_COLORS && STAGE_COLORS[task.stage]) || '#74FBD6',
+      location: task.location || '',
+      taskId: task.id
+    });
+    updateMarkerForKey(k);
+  }
+
+  // 3) Persist + refresh UIs
+  saveEvents();
+  if (state.drawerDate) renderDayHours(state.drawerDate);
+  try { if (typeof renderGantt === 'function') renderGantt(); try{ refreshTaskPickers(); }catch(_){ } } catch (_) {}
+}
+
+  // Gantt rendering with projects/folders and stage rows
+  
+  // Gantt bar context menu (Delete) [lazy-bind + robust handlers]
+let ganttCtx = null;
+let ctxTaskId = null;
+let ctxShownAt = 0;
+function ensureGanttCtx(){ return ganttCtx || (ganttCtx = document.getElementById('ganttCtx')); }
+
+function showCtx(x, y, taskId){
+  ctxShownAt = Date.now();
+  const el = ensureGanttCtx();
+  if (!el) return;
+  ctxTaskId = taskId;
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const w = 160, h = 44;
+  el.style.display = 'block';
+  el.style.left = Math.min(x, vw - w - 8) + 'px';
+  el.style.top  = Math.min(y, vh - h - 8) + 'px';
+}
+
+window.addEventListener('load', () => {
+  const el = ensureGanttCtx();
+  if (!el) return;
+  el.addEventListener('click', (e) => {
+    const act = e.target.closest('.item')?.dataset?.action;
+    if (act === 'delete' && ctxTaskId && tasks[ctxTaskId]) {
+      delete tasks[ctxTaskId]; saveTasks();
+      removeTaskEventInstances(ctxTaskId); saveEvents();
+      try{ if (typeof renderGantt === 'function') renderGantt(); try{ refreshTaskPickers(); }catch(_){ } }catch(_){}
+      if (state.drawerDate) renderDayHours(state.drawerDate);
+    }
+    el.style.display = 'none';
+    ctxTaskId = null;
+  });
+  
+// --- Stage context menu + actions ---
+let stageCtx = null, ctxStageIndex = null;
+function ensureStageCtx(){ return stageCtx || (stageCtx = document.getElementById('stageCtx')); }
+function showStageCtx(x, y, idx){
+  const el = ensureStageCtx(); if(!el) return;
+  ctxStageIndex = idx;
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const w = 200, h = 120;
+  el.style.display='block';
+  el.style.left = Math.min(x, vw - w - 8) + 'px';
+  el.style.top  = Math.min(y, vh - h - 8) + 'px';
+}
+(function(){ 
+  const stageEl = ensureStageCtx(); if(!stageEl) return;
+  stageEl.addEventListener('click', (e)=>{
+    const act = e.target.closest('.item')?.dataset?.action;
+    const idx = ctxStageIndex;
+    stageEl.style.display='none'; ctxStageIndex = null;
+    if (act === 'create'){
+      const name = prompt('New stage name:');
+      if (name && !STAGES.includes(name)){
+        STAGES.push(name);
+        saveStageConfig(); try{ renderGantt(); try{ refreshTaskPickers(); }catch(_){ } }catch(_){}
+      }
+      return;
+    }
+    if (typeof idx !== 'number' || idx < 0 || idx >= STAGES.length) return;
+    if (act === 'rename'){
+      const old = STAGES[idx];
+      const name = prompt('Rename stage:', old);
+      if (name && name !== old){
+        for(const t of Object.values(tasks)){ if (t.stage === old) t.stage = name; }
+        STAGES[idx] = name; saveTasks(); saveStageConfig();
+        try{ renderGantt(); try{ refreshTaskPickers(); }catch(_){ } }catch(_){}
+        if (state.drawerDate) renderDayHours(state.drawerDate);
+      }
+    } else if (act === 'delete'){
+      const name = STAGES[idx];
+      if (confirm('Delete stage "" + name + ""? This will also delete all tasks in this stage.')){
+        const delIds = Object.keys(tasks).filter(id => tasks[id].stage === name);
+        for(const id of delIds){ delete tasks[id]; }
+        saveTasks();
+        try{ delIds.forEach(id => removeTaskEventInstances(id)); }catch(_){}
+        saveEvents();
+        STAGES.splice(idx,1);
+        saveStageConfig();
+        try{ renderGantt(); try{ refreshTaskPickers(); }catch(_){ } }catch(_){}
+        if (state.drawerDate) renderDayHours(state.drawerDate);
+      }
+    }
+  });
+
+  document.addEventListener('mousedown', (e)=>{ if (!stageEl.contains(e.target)) { stageEl.style.display='none'; ctxStageIndex = null; } });
+  document.addEventListener('mousedown', (e)=>{ if (!el.contains(e.target)) { el.style.display='none'; ctxStageIndex = null; } });
+// click outside to hide (grace period prevents immediate close after open)
+  document.addEventListener('mousedown', (e) => { if (el.contains(e.target)) return; el.style.display = 'none'; ctxTaskId = null; });
+  // Esc to close
+  document.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Escape'){ el.style.display = 'none'; ctxTaskId = null; }
+  });
+
+});
+});
+
+
+// --- Inline edit helpers (global) ---
+function renameProject(oldName, newName){
+  if (!newName || oldName === newName) return false;
+  if (Array.isArray(PROJECTS) && PROJECTS.includes(newName)) return false;
+  const i = Array.isArray(PROJECTS) ? PROJECTS.indexOf(oldName) : -1;
+  if (i < 0) return false;
+  PROJECTS[i] = newName;
+
+  // migrate tasks
+  try { for (const t of Object.values(tasks)) if (t.project === oldName) t.project = newName; } catch(_){}
+
+  // migrate projectState if present
+  try {
+    if (typeof projectState !== 'undefined' && projectState && Object.prototype.hasOwnProperty.call(projectState, oldName)) {
+      projectState[newName] = projectState[oldName];
+      delete projectState[oldName];
+      if (typeof saveProjectState === 'function') saveProjectState();
+    }
+  } catch(_){}
+
+  if (typeof saveProjectConfig === 'function') saveProjectConfig();
+  if (typeof saveTasks === 'function') saveTasks();
+  try { if (typeof refreshTaskPickers === 'function') refreshTaskPickers(); } catch(_){}
+  try { if (typeof renderGantt === 'function') renderGantt(); } catch(_){}
+  try { if (state && state.drawerDate) renderDayHours(state.drawerDate); } catch(_){}
+  return true;
+}
+
+function renameStage(oldName, newName){
+  if (!newName || oldName === newName) return false;
+  if (Array.isArray(STAGES) && STAGES.includes(newName)) return false;
+  const i = Array.isArray(STAGES) ? STAGES.indexOf(oldName) : -1;
+  if (i < 0) return false;
+  STAGES[i] = newName;
+
+  // migrate tasks
+  try { for (const t of Object.values(tasks)) if (t.stage === oldName) t.stage = newName; } catch(_){}
+
+  if (typeof saveStageConfig === 'function') saveStageConfig();
+  if (typeof saveTasks === 'function') saveTasks();
+  try { if (typeof refreshTaskPickers === 'function') refreshTaskPickers(); } catch(_){}
+  try { if (typeof renderGantt === 'function') renderGantt(); } catch(_){}
+  try { if (state && state.drawerDate) renderDayHours(state.drawerDate); } catch(_){}
+  return true;
+}
+
+// Expose in case any handlers reference window.*
+window.renameProject = renameProject;
+window.renameStage   = renameStage;
+
+// Minimal picker sync if you don't already have one
+if (typeof refreshTaskPickers !== 'function') {
+  function refreshTaskPickers(){
+    try {
+      const projSels = [document.getElementById('taskProject'), document.getElementById('tProject')];
+      projSels.forEach(sel=>{
+        if(!sel || !Array.isArray(PROJECTS)) return;
+        const v = sel.value || "";
+        const header = sel.querySelector('option[value=""]') ? sel.querySelector('option[value=""]').outerHTML : '<option value="">-- Project (optional) --</option>';
+        sel.innerHTML = header + PROJECTS.map(p=>`<option>${p}</option>`).join('');
+        if (PROJECTS.includes(v)) sel.value = v; else if (v==="") sel.value = "";
+      });
+      const stageSels = [document.getElementById('taskStage'), document.getElementById('tStage')];
+      stageSels.forEach(sel=>{
+        if(!sel || !Array.isArray(STAGES)) return;
+        const v = sel.value || "";
+        const header = sel.querySelector('option[value=""]') ? sel.querySelector('option[value=""]').outerHTML : '<option value="">-- Stage (optional) --</option>';
+        sel.innerHTML = header + STAGES.map(s=>`<option>${s}</option>`).join('');
+        if (STAGES.includes(v)) sel.value = v; else if (v==="") sel.value = "";
+      });
+    } catch(_){}
+  }
+}
+
+function renderGantt(){
+
+    const colw = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--gcol')) || 20;
+    const days = daysInYear(state.year);
+    const grid = document.getElementById('ganttGrid');
+    const monthsRow = document.getElementById('ganttMonths');
+    const xbody = document.getElementById('ganttXBody');
+    const tree = document.getElementById('ganttTree');
+    if(!grid || !monthsRow || !xbody || !tree) return;
+
+    // Months header widths
+    monthsRow.innerHTML='';
+    const monthBG = document.getElementById('ganttMonthBG'); if(monthBG){ monthBG.innerHTML=''; }
+    for(let m=0;m<12;m++){
+      const first = new Date(state.year,m,1);
+      const next  = new Date(state.year,m+1,1);
+      const len = Math.round((next-first)/86400000);
+      const w = (len*colw)+'px';
+      const span = document.createElement('div'); span.className='m'; span.style.width = w; span.textContent = months[m].slice(0,3).toUpperCase();
+      // header tint
+      span.style.background = MONTH_COLORS[m] + '33';
+      monthsRow.appendChild(span);
+      // body band tint
+      if(monthBG){
+        const band = document.createElement('div'); band.className='m'; band.style.width = w;
+        band.style.background = MONTH_COLORS[m] + '22';
+        monthBG.appendChild(band);
+      }
+    }
+    monthsRow.style.width = (days*colw)+'px';
+
+    // Build tree & row map
+    tree.innerHTML='';
+    const rows = []; // rows as sequence of {type:'proj'|'stage', project, stage?}
+    PROJECTS.forEach(proj=>{
+      // project header row
+      const pNode = document.createElement('li'); pNode.className='node project';
+      const caret = document.createElement('span'); caret.className='caret'; caret.textContent = projectState[proj]?.open ? '▾' : '▸';
+      const label = document.createElement('span'); label.className='label editable'; label.contentEditable='true'; label.dataset.type='project'; label.dataset.old = proj; label.textContent = proj;
+      label.className = 'label editable';
+      label.contentEditable = 'true';
+      label.dataset.type = 'project';
+      label.dataset.old  = proj;
+      label.textContent  = proj;
+      caret.addEventListener('click', ()=>{ projectState[proj].open = !projectState[proj].open; saveProjectState(); renderGantt(); try{ refreshTaskPickers(); }catch(_){ } });
+      pNode.appendChild(caret); pNode.appendChild(label); tree.appendChild(pNode);
+      rows.push({type:'proj', project:proj});
+      if(projectState[proj]?.open){
+        
+  STAGES.forEach((st,i)=>{
+    const stNode = document.createElement('li');
+    stNode.className = 'stage';
+    const stLabel = document.createElement('span');
+stLabel.className = 'label editable';
+stLabel.contentEditable = 'true';
+stLabel.dataset.type = 'stage';
+stLabel.dataset.old = st;
+stLabel.textContent = st;
+stNode.appendChild(stLabel);
+  stNode.dataset.index = i;
+  // right-click: stage context menu
+  stNode.addEventListener('contextmenu', (e)=>{
+    e.preventDefault(); e.stopPropagation();
+    if (typeof showStageCtx === 'function') showStageCtx(e.clientX, e.clientY, i);
+  });
+  // drag reorder
+  stNode.draggable = true;
+  stNode.addEventListener('dragstart', (e)=>{
+    try{ e.dataTransfer.setData('text/plain', String(i)); }catch(_){}
+    e.dataTransfer.effectAllowed = 'move';
+    stNode.classList.add('dragging');
+  });
+  stNode.addEventListener('dragend', ()=>{ stNode.classList.remove('dragging'); });
+  stNode.addEventListener('dragover', (e)=>{ e.preventDefault(); stNode.classList.add('drag-over'); });
+  stNode.addEventListener('dragleave', ()=>{ stNode.classList.remove('drag-over'); });
+  stNode.addEventListener('drop', (e)=>{
+    e.preventDefault(); stNode.classList.remove('drag-over');
+    let from = i;
+    try{ const dt = e.dataTransfer.getData('text/plain'); if (dt) from = parseInt(dt,10); }catch(_){}
+    const to = i;
+    if (Number.isInteger(from) && from !== to){
+      const [mv] = STAGES.splice(from,1);
+      STAGES.splice(to,0,mv);
+      saveStageConfig();
+      renderGantt(); try{ refreshTaskPickers(); }catch(_){ }
+    }
+  });
+  tree.appendChild(stNode);
+  rows.push({type:'stage', project:proj, stage:st});
+
+    });
+  }
+});
+
+    const ROW_H = 36;
+    // Grid dimensions & guide rows
+    grid.style.setProperty('--days', days);
+    grid.style.setProperty('--colw', colw+'px');
+    grid.style.setProperty('--grid-h', (rows.length*ROW_H + 20)+'px');
+    grid.innerHTML='';
+    for(let i=0;i<rows.length;i++){ const rl = document.createElement('div'); rl.className='rowline'; rl.style.top = (i*ROW_H)+'px'; grid.appendChild(rl); }
+
+    function hasStageDayConflict(candidate, skipId){
+  // candidate: { project, stage, start, end }
+  for (const t of Object.values(tasks)) {
+    if (skipId && t.id === skipId) continue;                 // ignore self on edit
+    if (t.project === candidate.project && t.stage === candidate.stage) {
+      const s1 = parseYMD(t.start), e1 = parseYMD(t.end);
+      const s2 = parseYMD(candidate.start), e2 = parseYMD(candidate.end);
+      if (!(e2 < s1 || s2 > e1)) return true;                // any overlap in same stage
+    }
+  }
+  return false;
+}
+
+    // Place task bars (only on visible stage rows)
+    Object.values(tasks).forEach(t=>{
+      const idx = rows.findIndex(r => r.type==='stage' && r.project===t.project && r.stage===t.stage);
+      if(idx===-1) return;
+      const sDate = parseYMD(t.start), eDate = parseYMD(t.end);
+      const yStart = new Date(state.year,0,1), yEnd = new Date(state.year,11,31);
+      if(eDate < yStart || sDate > yEnd) return;
+      const sClamp = sDate < yStart ? yStart : sDate;
+      const eClamp = eDate > yEnd ? yEnd : eDate;
+
+      const left = (dayOfYear(sClamp)-1) * colw;
+      const span = Math.max(1, Math.floor((eClamp - sClamp)/86400000)+1);
+      const top = (idx*ROW_H) + 7;
+      const bar = document.createElement('div'); bar.className='bar'; bar.dataset.id = t.id;
+      bar.style.left = left+'px'; bar.style.top = top+'px'; bar.style.width = (span*colw - 4)+'px';
+      const color = t.color || STAGE_COLORS[t.stage] || '#74FBD6';
+      bar.style.background = color; bar.style.color = pickText(color);
+      bar.innerHTML = `<span class="label">${t.title}</span><span class="handles"><span class="h hr"></span></span>`;
+
+      // Drag/resize
+      let dragMode=null, startX=0, origS=t.start, origE=t.end, moved=false;
+      bar.addEventListener('mousedown', (ev)=>{ if (ev.button !== 0) return;
+        ev.preventDefault();
+        startX = ev.clientX;
+        const rect = bar.getBoundingClientRect(); const offsetX = ev.clientX - rect.left;
+        dragMode = (offsetX > rect.width-10) ? 'right' : 'move';
+        origS = t.start; origE = t.end;
+        document.addEventListener('mousemove', onDrag); document.addEventListener('mouseup', onUp, {once:true});
+      });
+      function onDrag(ev){
+        const dx = (ev.clientX - startX);
+        const dd = Math.round(dx / colw); if(!dd) return; moved = true;
+        let s = parseYMD(origS), e = parseYMD(origE);
+        if(dragMode==='move'){ s = addDays(s, dd); e = addDays(e, dd); }
+        else if(dragMode==='left'){ s = addDays(s, dd); if(s>e) s=e; }
+        else if(dragMode==='right'){ e = addDays(e, dd); if(e<s) e=s; }
+        const yS = new Date(state.year,0,1), yE = new Date(state.year,11,31);
+        if(s < yS){ const shift = Math.floor((yS - s)/86400000); s = yS; if(dragMode==='move') e = addDays(e, shift); }
+        if(e > yE){ const shift = Math.floor((e - yE)/86400000); e = yE; if(dragMode==='move') s = addDays(s, -shift); }
+        const left2 = (dayOfYear(s)-1)*colw; const span2 = Math.max(1, Math.floor((e - s)/86400000)+1);
+        bar.style.left = left2+'px'; bar.style.width = (span2*colw - 4)+'px';
+      }
+      
+      function onUp(){
+  document.removeEventListener('mousemove', onDrag);
+  if(!moved){ openTaskDrawer(t); return; }
+
+  const l = parseInt(bar.style.left,10) || 0;
+  const w = parseInt(bar.style.width,10) || 0;
+  const colStart2 = Math.round(l / colw) + 1;
+  const span2     = Math.round((w + 4) / colw);
+  const y0 = new Date(state.year, 0, 1);
+  const newStart = addDays(y0, colStart2 - 1);
+  const newEnd   = addDays(newStart, span2 - 1);
+
+  t.start = toYMD(newStart);
+  t.end   = toYMD(newEnd);
+
+  tasks[t.id] = t;
+  saveTasks();
+  syncTaskToEvents(t);
+  renderGantt(); try{ refreshTaskPickers(); }catch(_){ }
+}
+
+      // Click to open task drawer
+      bar.addEventListener('click', (ev)=>{ ev.stopPropagation(); openTaskDrawer(t); });
+      // Right-click: open Delete-only context menu (no color prompt)
+      bar.addEventListener('contextmenu', (e) => {
+        e.preventDefault(); e.stopPropagation();
+        if (typeof showCtx === 'function') showCtx(e.clientX, e.clientY, t.id);
+      });
+      grid.appendChild(bar);
+    });
+
+    // Double-click empty grid to create task
+    if(!grid._dblBound){ grid.addEventListener('dblclick', (ev)=>{ if (ev.button !== 0) return;
+      const rect = grid.getBoundingClientRect();
+      const col = Math.max(0, Math.floor((ev.clientX - rect.left) / colw));
+      const y = ev.clientY - rect.top;
+      const row = Math.floor(y / 36);
+      const rowMap = []; // rebuild quick map
+      let ry=0;
+      PROJECTS.forEach(proj=>{ if(projectState[proj]?.open){ STAGES.forEach(st=>{ rowMap.push({project:proj,stage:st}); ry++; }); } });
+      const r = rowMap[row]; if(!r) return;
+      const y0 = new Date(state.year,0,1);
+      const startD = addDays(y0, col);
+      const id = 't' + Math.random().toString(36).slice(2,8) + Date.now().toString(36);
+      const t = { id, title: 'New Task', project: r.project, stage: r.stage, start: toYMD(startD), end: toYMD(addDays(startD,1)), color: STAGE_COLORS[r.stage], startTime:'09:00', endTime:'10:00' };
+      if (hasStageDayConflict(t)) { alert('Task overlaps another task in the same stage.'); return; }
+tasks[id]=t; saveTasks(); syncTaskToEvents(t); renderGantt(); try{ refreshTaskPickers(); }catch(_){ }
+    }); grid._dblBound = true; }
+
+    // Delegated context menu fallback
+    if(!grid._ctxBound){ grid.addEventListener('contextmenu', (e)=>{
+      const barEl = e.target.closest('.bar');
+      if(barEl){ e.preventDefault(); const id = barEl.dataset.id; if(typeof showCtx==='function') showCtx(e.clientX, e.clientY, id); }
+    }); grid._ctxBound = true;
+
+    // Header sync with body
+    xbody.onscroll = ()=>{ const head = document.querySelector('.gantt-xhead'); if(head) head.scrollLeft = xbody.scrollLeft; };
+    // Horizontal wheel scroll
+    xbody.addEventListener('wheel', (e)=>{ e.preventDefault(); xbody.scrollLeft += (Math.abs(e.deltaY) > Math.abs(e.deltaX) ? e.deltaY : e.deltaX); }, {passive:false});
+    // Drag the months header to scroll
+    const xhead = document.querySelector('.gantt-xhead');
+    let isDrag=false, sx=0, sl=0;
+    if(xhead){
+      xhead.addEventListener('mousedown', (e)=>{ if (e.button !== 0) return; isDrag=true; sx=e.clientX; sl=xbody.scrollLeft; document.body.classList.add('noselect'); xhead.classList.add('dragging'); });
+      window.addEventListener('mousemove', (e)=>{ if(isDrag){ xbody.scrollLeft = sl - (e.clientX - sx); } });
+      window.addEventListener('mouseup', ()=>{ isDrag=false; document.body.classList.remove('noselect'); if(xhead) xhead.classList.remove('dragging'); });
+    }
+
+  }};
+
+const submitBtn = document.getElementById('submitBtn');
+// Unified submit handler for Event Drawer (calendar + gantt task modes)
+if (submitBtn) submitBtn.addEventListener('click', (e) => {
+  e.preventDefault();
+
+  const title = (titleInput.value || '').trim();
+  if (!title) { titleInput.focus(); return; }
+
+  // Build dates
+  let sDate = startDateInput.value ? parseYMD(startDateInput.value) : (state.drawerDate || new Date());
+  let eDate = endDateInput.value ? parseYMD(endDateInput.value) : sDate;
+  if (eDate < sDate) { const tmp = sDate; sDate = eDate; eDate = tmp; }
+
+  const evt = {
+    title,
+    start: startInput.value || '09:00',
+    end: endInput.value || '10:00',
+    color: colorInput.value,
+    location: (document.getElementById('eventLocation')||{}).value || ''
+  };
+
+  // Optional: create a linked task if user checked Task and not editing an existing Gantt task
+  if (taskFlag && taskFlag.checked && taskProject && taskProject.value && taskStage && taskStage.value && !state.ganttEditingId) {
+    const id = 't' + Math.random().toString(36).slice(2,8) + Date.now().toString(36);
+    const t = { id, title: evt.title, project: taskProject.value, stage: taskStage.value,
+                start: toYMD(sDate), end: toYMD(eDate), color: evt.color, location: evt.location,
+                startTime: evt.start, endTime: evt.end };
+  if (hasStageDayConflict(t)) {
+  alert('Another task exists on these dates in the same stage. Pick a different day.');
+  return;
+  }
+    tasks[t.id] = t; saveTasks(); syncTaskToEvents(t);
+    evt.taskId = id;
+  }
+
+  if (editing){
+    deleteEvent(editing.key, editing.id);
+    addEventToRange(sDate, eDate, evt);
+    saveEvents();
+    const prev = editing && editing.prevEvent;
+    if (prev && prev.taskId && tasks[prev.taskId]){
+      const t = tasks[prev.taskId];
+      t.title = evt.title; t.color = evt.color; t.location = evt.location;
+      t.start = toYMD(sDate); t.end = toYMD(eDate); t.startTime = evt.start; t.endTime = evt.end;
+      tasks[t.id] = t; saveTasks(); syncTaskToEvents(t);
+    }
+    state.drawerDate = sDate; renderDayHours(state.drawerDate);
+    renderGantt(); try{ refreshTaskPickers(); }catch(_){ }
+    exitEditMode();
+  } else if (state.ganttEditingId && tasks[state.ganttEditingId]){
+    const t = tasks[state.ganttEditingId];
+    t.title = evt.title; t.color = evt.color; t.location = evt.location;
+    t.project = (taskProject && taskProject.value) || t.project;
+    t.stage = (taskStage && taskStage.value) || t.stage;
+    t.start = toYMD(sDate); t.end = toYMD(eDate); t.startTime = evt.start; t.endTime = evt.end;
+    tasks[t.id] = t; saveTasks(); syncTaskToEvents(t); renderGantt(); try{ refreshTaskPickers(); }catch(_){ }
+    closeDrawer();
+  } else {
+    addEventToRange(sDate, eDate, evt); saveEvents();
+    state.drawerDate = sDate; renderDayHours(state.drawerDate); renderGantt(); try{ refreshTaskPickers(); }catch(_){ }
+  }
+
+  titleInput.value='';
+});
+
+  let stateGanttEditingId = null; // legacy
+  // state.ganttEditingId will be set after state init;
+  const taskProject = document.getElementById('taskProject');
+  const taskStage = document.getElementById('taskStage');
+  const taskFlag = document.getElementById('taskFlag');
   const todayBtn = document.getElementById('todayBtn');
   const yearPrev = document.getElementById('yearPrev');
   const yearNext = document.getElementById('yearNext');
@@ -508,6 +1409,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const searchList = document.getElementById('searchList');
 
   const state = { year: new Date().getFullYear(), drawerDate: null };
+  state.ganttEditingId = null;
   let monthEls = [];
   let dateToCell = new Map();
   let selectedCell = null;
@@ -851,7 +1753,7 @@ function buildYear(){
         const btn = document.createElement('button'); btn.className='daynum'; btn.type='button'; btn.textContent = d.getDate(); btn.ariaLabel = d.toDateString();
         
         // New selection handlers
-        btn.addEventListener('mousedown', (e)=>{
+        btn.addEventListener('mousedown', (e)=>{ if (e.button !== 0) return;
           if(e.button!==0) return;
           if(e.shiftKey){ /* start additive range drag */ isDragging = true; dragAnchorKey = keyOf(d); setDragRange(dragAnchorKey); }
           else { /* start contiguous drag interpreted as multi */ isDragging = true; dragAnchorKey = keyOf(d); setDragRange(dragAnchorKey); }
@@ -918,7 +1820,14 @@ btn.addEventListener('contextmenu', (e)=>{ e.preventDefault(); openDayColorMenu(
     renderDayHours(date);
   drawer.classList.add('open'); drawer.setAttribute('aria-hidden','false');
   }
-  function closeDrawer(){ drawer.classList.remove('open'); drawer.setAttribute('aria-hidden','true'); exitEditMode(); }
+  function closeDrawer(){
+  document.body.classList.remove('taskmode');
+  if (typeof state !== 'undefined') state.ganttEditingId = null;
+  const tf = document.getElementById('taskFlag'); if(tf) tf.disabled = false;
+  const drawer = document.getElementById('drawer');
+  if (drawer){ drawer.classList.remove('open'); drawer.setAttribute('aria-hidden','true'); }
+  exitEditMode();
+}
 
   function renderDayHours(date){
     drawerHours.innerHTML = '';
@@ -945,7 +1854,7 @@ btn.addEventListener('contextmenu', (e)=>{ e.preventDefault(); openDayColorMenu(
       const edit = document.createElement('button'); edit.textContent='✎'; edit.title='Edit';
       edit.onclick = ()=>{ enterEditMode(key, e.id, chip, e); };
       const del = document.createElement('button'); del.textContent='×'; del.title='Delete';
-      del.onclick = ()=>{ deleteEvent(key, e.id); };
+      del.onclick = ()=>{ deleteCalendarEvent(key, e.id); };
       actions.appendChild(edit); actions.appendChild(del); chip.appendChild(actions);
       slot.appendChild(chip);
       drawerHours.appendChild(lab); drawerHours.appendChild(slot);
@@ -969,29 +1878,50 @@ btn.addEventListener('contextmenu', (e)=>{ e.preventDefault(); openDayColorMenu(
   }
 
   function deleteEvent(key, id){
-    const list = events[key]; if(!list) return;
-    const idx = list.findIndex(ev=>ev.id===id);
-    if(idx>-1){ list.splice(idx,1); if(!list.length) delete events[key]; saveEvents(); }
-    if(state.drawerDate && keyOf(state.drawerDate)===key) renderDayHours(state.drawerDate);
-    updateMarkerForKey(key);
-    if(editing && editing.key===key && editing.id===id){ exitEditMode(); }
+  const list = events[key]; if(!list) return;
+  const idx = list.findIndex(ev=>ev.id===id);
+  if (idx > -1){
+    list.splice(idx,1);
+    if(!list.length) delete events[key];
   }
+  saveEvents();
+  if (state.drawerDate && keyOf(state.drawerDate)===key) renderDayHours(state.drawerDate);
+  updateMarkerForKey(key);
+  if (editing && editing.key===key && editing.id===id){ exitEditMode(); }
+}
 
-  function addEventToRange(startDate, endDate, evt){
-    const s = parseYMD(toYMD(startDate));
-    const e = parseYMD(toYMD(endDate));
-    for(let d=new Date(s); d<=e; d=addDays(d,1)){
-      const k = keyOf(d);
-      if(!events[k]) events[k]=[];
-      events[k].push({...evt, id: uid()});
-      updateMarkerForKey(k);
-    }
+function deleteCalendarEvent(key, id){
+  const list = events[key]; if(!list) return;
+  const ev = list.find(ev=>ev.id===id);
+  // remove from day
+  events[key] = list.filter(ev=>ev.id!==id);
+  if (!events[key].length) delete events[key];
+  updateMarkerForKey(key);
+  // if mirrored from Gantt task, delete task + all mirrors
+  if (ev && ev.taskId && tasks[ev.taskId]){
+    delete tasks[ev.taskId]; saveTasks();
+    try{ removeTaskEventInstances(ev.taskId); }catch(_){}
   }
+  saveEvents();
+  if (state.drawerDate && keyOf(state.drawerDate)===key) renderDayHours(state.drawerDate);
+  try{ if (typeof renderGantt === 'function') renderGantt(); try{ refreshTaskPickers(); }catch(_){ } }catch(_){}
+  if (editing && editing.key===key && editing.id===id){ exitEditMode(); }
+}
 
-  function enterEditMode(key, id, chipEl, e){
+function addEventToRange(startDate, endDate, evt){
+  const s = parseYMD(toYMD(startDate));
+  const e = parseYMD(toYMD(endDate));
+  for(let d=new Date(s); d<=e; d=addDays(d,1)){
+    const k = keyOf(d);
+    if(!events[k]) events[k]=[];
+    events[k].push(Object.assign({id: uid()}, evt));
+    updateMarkerForKey(k);
+  }
+}
+function enterEditMode(key, id, chipEl, e){
   try{ setEditPanel(true); }catch(e){}
     exitEditMode();
-    editing = { key, id, chipEl };
+    editing = { key, id, chipEl, prevEvent: e };
     chipEl.classList.add('editing');
     submitBtn.textContent = 'Edit';
     titleInput.value = e.title || '';
@@ -1004,33 +1934,13 @@ btn.addEventListener('contextmenu', (e)=>{ e.preventDefault(); openDayColorMenu(
   }
 
   function exitEditMode(){
-    if(editing){ editing.chipEl.classList.remove('editing'); }
-    editing = null; submitBtn.textContent = 'Add';
-  }
+  // Leave edit mode without mutating data; form submit handles saves.
+  editing = null;
+  const tf = document.getElementById('taskFlag'); if(tf) tf.disabled = false;
+}
 
-  form.addEventListener('submit', (e)=>{
-    e.preventDefault();
-    if(!state.drawerDate) return;
-    const sDate = startDateInput.value ? parseYMD(startDateInput.value) : state.drawerDate;
-    const eDate = endDateInput.value ? parseYMD(endDateInput.value) : sDate;
-    const evt = { title: titleInput.value.trim(), start: startInput.value, end: endInput.value, color: colorInput.value, location: locationInput.value.trim() };
-    if(!evt.title) return;
 
-    if(editing){
-      deleteEvent(editing.key, editing.id);
-      addEventToRange(sDate, eDate, evt);
-      saveEvents();
-      state.drawerDate = sDate; renderDayHours(state.drawerDate);
-      exitEditMode();
-    } else {
-      addEventToRange(sDate, eDate, evt); saveEvents();
-      state.drawerDate = sDate; renderDayHours(state.drawerDate);
-    }
-
-    titleInput.value='';
-    });
-
-  document.getElementById('drawerClose').addEventListener('click', closeDrawer);
+  const drawerCloseBtn = document.getElementById('drawerClose'); if(drawerCloseBtn) drawerCloseBtn.addEventListener('click', closeDrawer);
   
   window.addEventListener('keydown', (e)=>{
     if(e.key==='Escape'){
@@ -1045,15 +1955,15 @@ btn.addEventListener('contextmenu', (e)=>{ e.preventDefault(); openDayColorMenu(
     if (today.getFullYear() !== state.year){
       state.year = today.getFullYear();
       buildYear();
-
+      renderGantt(); try{ refreshTaskPickers(); }catch(_){ }
     }
     const m = today.getMonth();
     monthEls[m].scrollIntoView({behavior:'smooth', block:'start'});
     setTimeout(()=> setActiveMonthByScroll(), 300);
   });
 
-  yearPrev.addEventListener('click', ()=>{ state.year--; buildYear(); decorateMonthHolidays(); canvas.scrollTop = 0; });
-  yearNext.addEventListener('click', ()=>{ state.year++; buildYear(); decorateMonthHolidays(); canvas.scrollTop = 0; });
+  yearPrev.addEventListener('click', ()=>{ state.year--; buildYear(); decorateMonthHolidays(); renderGantt(); try{ refreshTaskPickers(); }catch(_){ } canvas.scrollTop = 0; });
+  yearNext.addEventListener('click', ()=>{ state.year++; buildYear(); decorateMonthHolidays(); renderGantt(); try{ refreshTaskPickers(); }catch(_){ } canvas.scrollTop = 0; });
 
   /* Country selector */
   if (countrySelect){
@@ -1077,7 +1987,7 @@ btn.addEventListener('contextmenu', (e)=>{ e.preventDefault(); openDayColorMenu(
   });
 
   function exportJSON(){
-    const payload = { events, dayColors, country: currentCountry };
+    const payload = { events, dayColors, country: currentCountry, tasks, projectState };
     const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
     const a = document.createElement('a');
     const now = new Date();
@@ -1095,7 +2005,7 @@ btn.addEventListener('contextmenu', (e)=>{ e.preventDefault(); openDayColorMenu(
     reader.onload = ()=>{
       try{
         const data = JSON.parse(reader.result);
-        if(data && data.events){
+        if(data && (data.events || data.tasks)){
           if(importMode==='replace'){ events = {}; dayColors = {}; }
           for(const [k, arr] of Object.entries(data.events||{})){
             if(!Array.isArray(arr)) continue;
@@ -1106,6 +2016,8 @@ btn.addEventListener('contextmenu', (e)=>{ e.preventDefault(); openDayColorMenu(
             if(val) dayColors[k] = val; else delete dayColors[k];
           }
           if(data.country){ currentCountry = data.country; if(countrySelect) countrySelect.value = currentCountry; }
+          if(data.tasks){ tasks = data.tasks||{}; saveTasks(); }
+          if(data.projectState){ projectState = data.projectState||projectState; saveProjectState(); }
           saveEvents(); saveDayColors(); buildYear(); decorateMonthHolidays(); closeMenu();
         } else {
           if(importMode==='replace'){ events = {}; }
@@ -1228,8 +2140,41 @@ btn.addEventListener('contextmenu', (e)=>{ e.preventDefault(); openDayColorMenu(
 
   buildYear();
   decorateMonthHolidays();
+  renderGantt(); try{ refreshTaskPickers(); }catch(_){ }
   
 })();
+
+
+(function bindInlineEditing(){
+  const tree = document.getElementById('ganttTree');
+  if (!tree || tree._inlineBound) return;
+  tree._inlineBound = true;
+
+  // Enter = save; Esc = cancel
+  tree.addEventListener('keydown', (e)=>{
+    const el = e.target.closest('.label.editable');
+    if (!el) return;
+    if (e.key === 'Enter') { e.preventDefault(); el.blur(); }
+    if (e.key === 'Escape') { e.preventDefault(); el.textContent = el.dataset.old || el.textContent; el.blur(); }
+  }, true);
+
+  // Save on blur
+  tree.addEventListener('blur', (e)=>{
+    const el = e.target.closest('.label.editable');
+    if (!el) return;
+    const oldName = el.dataset.old || '';
+    const newName = (el.textContent || '').trim();
+    const type = el.dataset.type;
+    if (!newName || newName === oldName) { el.textContent = oldName; return; }
+    let ok = false;
+    if (type === 'project') ok = window.renameProject(oldName, newName);
+    else if (type === 'stage') ok = window.renameStage(oldName, newName);
+    if (!ok) el.textContent = oldName;
+    else el.dataset.old = newName;
+  }, true);
+})();
+
+
 </script>
 
 <div id="dayColorMenu" class="context-menu" aria-hidden="true" hidden>
@@ -1247,6 +2192,16 @@ btn.addEventListener('contextmenu', (e)=>{ e.preventDefault(); openDayColorMenu(
     <input type="color" id="dayColorPicker" value="#2EA1FF" />
     <button id="dayColorClear" type="button">Clear</button>
   </div>
+</div>
+
+<div id="ganttCtx" class="gctx">
+  <div class="item" data-action="delete">Delete task</div>
+</div>
+
+<div id="stageCtx" class="gctx">
+  <div class="item" data-action="rename">Rename stage</div>
+  <div class="item" data-action="delete">Delete stage</div>
+  <div class="item" data-action="create">Create new stage</div>
 </div>
 
 </body>
