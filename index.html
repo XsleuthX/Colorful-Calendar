@@ -26,7 +26,17 @@
       --z-drawer: 1100;
       --z-side: 1300;
       --z-search: 1400;
-    }
+    
+
+--row-h: 36px;
+--bar-h: 22px;
+--gantt-font-size: 12px;
+--gantt-font-family: Source Sans Pro, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+--gantt-font-weight: 900;
+--gantt-font-color: ;
+      --gantt-left-w: 260px;
+}
+
     *{box-sizing:border-box}
     html,body{height:100%;margin:0}
     body{
@@ -294,24 +304,24 @@
 .calendar-wrap{display:flex; flex-direction:column; flex:0 0 var(--device-w); width:var(--device-w); min-width:var(--device-w); min-height:0;}
 .calendar-wrap > .weekday-row{position:sticky; top:var(--header-h); z-index:var(--z-weekbar);}
 .calendar-wrap > .canvas{flex:1; min-height:0; overflow:auto;}
-.gantt-shell{flex:1 1 auto; min-width:0; display:flex; flex-direction:column; min-height:0; color:#fff;}
-.gantt-head{flex:0 0 auto; display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 10px; background:rgba(255,255,255,.10); border:1px solid rgba(255,255,255,.14); border-radius:12px; margin:6px 0;}
+.gantt-shell{flex:1 1 auto; min-width:0; display:flex; flex-direction:column; min-height:0; color:#fff; position:relative;}
+.gantt-head{flex:0 0 auto; display:flex; align-items:center; justify-content:flex-start; gap:10px; padding:8px 10px; background:rgba(255,255,255,.10); border:1px solid rgba(255,255,255,.14); border-radius:12px; margin:6px 0;}
 .gantt-head .title{font-size:14px; font-weight:900; text-transform:uppercase; letter-spacing:.06em;}
-.gantt-xhead{overflow:hidden; width:100%;}
+.gantt-xhead{overflow:hidden; flex:1 1 auto; min-width:0;}
 .gantt-months{height:22px;}
 .gantt-monthsInner{position:relative; height:22px; display:flex;}
 .gantt-monthsInner .m{flex:0 0 auto; height:100%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800; opacity:.95; border-right:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); padding:0 4px;}
 .gantt-body{flex:1 1 auto; min-height:0; display:grid; grid-template-columns: 220px 1fr; gap:8px;}
 .gantt-left{overflow:auto; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12); border-radius:10px; position:relative;}
-.gantt-tree{list-style:none; margin:0; padding:0;}
+.gantt-tree{ position:relative;list-style:none; margin:0; padding:0;}
 .gantt-tree .node{display:flex; align-items:center; gap:8px; padding:8px 10px; border-bottom:1px solid rgba(255,255,255,.08); font-weight:800;}
 .gantt-tree .node .caret{width:16px; text-align:center; cursor:pointer; opacity:.9;}
 .gantt-tree .stage{padding-left:28px; font-weight:700; opacity:.95; height:36px; display:flex; align-items:center;}
 .gantt-xbody{overflow-x:auto; overflow-y:hidden; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12); border-radius:10px; position:relative;}
 .gantt-grid{position:relative; width: calc(var(--gcol) * var(--days)); min-height: var(--grid-h, 400px); background-image: repeating-linear-gradient(to right, rgba(255,255,255,.08) 0, rgba(255,255,255,.08) var(--gcol), rgba(255,255,255,.04) var(--gcol), rgba(255,255,255,.04) calc(var(--gcol)*2));}
 .gantt-grid .rowline{position:absolute; left:0; right:0; height:36px; border-bottom:1px solid rgba(255,255,255,.08);}
-.gantt-grid .bar{position:absolute; height:22px; border-radius:8px; display:flex; align-items:center; padding:0 8px; font-size:12px; font-weight:900; cursor:grab; box-shadow:0 2px 6px rgba(0,0,0,.3);}
-.gantt-grid .bar .label{white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:220px;}
+.gantt-grid .bar{position:absolute; height:var(--bar-h); border-radius:8px; display:flex; align-items:center; padding:0 8px; font-size:var(--gantt-font-size); font-weight:var(--gantt-font-weight); font-family:var(--gantt-font-family); cursor:grab; box-shadow:0 2px 6px rgba(0,0,0,.3);}
+.gantt-grid .bar .label{white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:220px; color: var(--gantt-font-color, inherit);}
 .gantt-grid .bar .handles{margin-left:auto; display:flex; gap:4px;}
 .gantt-grid .bar .h{width:8px; height:14px; background:rgba(0,0,0,.25); border-radius:2px; cursor:ew-resize;}
 .gantt-grid .bar:active{cursor:grabbing;}
@@ -370,8 +380,8 @@
 .topbar .year-toggle { display:flex; align-items:center; gap:8px; }
 
 /* Uniform row heights so labels and bars align */
-.gantt-tree .node{height:36px; padding:0 10px; display:flex; align-items:center;}
-.gantt-tree .stage{height:36px; padding-left:28px; display:flex; align-items:center;}
+.gantt-tree .node{height:var(--row-h); padding:0 10px; display:flex; align-items:center;}
+.gantt-tree .stage{height:var(--row-h); padding-left:28px; display:flex; align-items:center;}
 
 
 /* Keep controls row positioned relative for center absolute alignment */
@@ -423,10 +433,10 @@ body.taskmode #taskModeBadge{display:inline-flex;}
 
 /* Gantt: align month header with grid columns & bar rows */
 .gantt-xhead{ padding-left:1px; }                /* compensate xbody border-left */
-.gantt-months{ height:36px; }
-.gantt-monthsInner{ height:36px; }
-.gantt-monthsInner .m{ height:36px; display:flex; align-items:center; }
-.gantt-grid .rowline{ height:36px; }             /* ensure row lines match */
+.gantt-months{ height:var(--row-h); position:relative; }
+.gantt-monthsInner{ height:var(--row-h); }
+.gantt-monthsInner .m{ height:var(--row-h); display:flex; align-items:center; }
+.gantt-grid .rowline{ height:var(--row-h); }             /* ensure row lines match */
 
 
 /* Dedicated right-side drawer confined to Gantt panel */
@@ -438,6 +448,64 @@ body.taskmode #taskModeBadge{display:inline-flex;}
 /* Inline editable styling */
 #ganttTree .label.editable { outline: none; border-radius: 6px; padding: 0 4px; }
 #ganttTree .label.editable:focus { background: rgba(255,255,255,0.08); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.25); }
+
+
+/* Gantt style controls */
+.gantt-style {
+  display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+}
+.gantt-style details {
+  background: rgba(255,255,255,.10);
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 10px;
+  padding: 6px 8px;
+}
+.gantt-style summary{ cursor:pointer; font-weight:900; }
+.gantt-style .panel{
+  display:grid; grid-template-columns: repeat(2, auto); gap:8px 10px; padding-top:6px; align-items:center;
+}
+.gantt-style label{ font-size:12px; opacity:.9; }
+.gantt-style input[type="range"],
+.gantt-style input[type="number"],
+.gantt-style select,
+.gantt-style input[type="color"]{
+  background: rgba(255,255,255,.12); color:#fff; border:0; border-radius:8px; padding:6px 8px;
+}
+.gantt-style .zoom-buttons button{
+  appearance:none;border:0;border-radius:8px;padding:6px 8px;background:rgba(255,255,255,.16);color:#fff;cursor:pointer;font-weight:900;
+}
+
+/* Resize handle on the right edge of Gantt panel */
+#ganttResize{
+  position:absolute; top:0; right:-5px; bottom:0; width:10px;
+  cursor: ew-resize; z-index: 1500;
+  background: linear-gradient(to right, transparent, rgba(255,255,255,.08), transparent);
+  border-right:1px solid rgba(255,255,255,.12);
+}
+#ganttResize:hover{ background: linear-gradient(to right, transparent, rgba(255,255,255,.16), transparent); }
+
+
+/* Apply font variables across Gantt */
+#ganttTree, #ganttTree .label, .gantt-tree .node, .gantt-tree .stage, .gantt-grid, .gantt-grid .bar, .gantt-grid .bar .label {
+  font-family: var(--gantt-font-family);
+  font-size: var(--gantt-font-size);
+  color: var(--gantt-font-color, inherit);
+}
+
+/* Apply font to month headers as well */
+.gantt-xhead, .gantt-months, .gantt-monthsInner, .gantt-monthsInner .m, .gantt-monthsInner .m .label{
+  font-family: var(--gantt-font-family);
+  font-size: var(--gantt-font-size);
+  color: var(--gantt-font-color, #fff);
+}
+
+/* Left-panel resize handle */
+#ganttTreeResize{
+  position:absolute; top:0; bottom:0; left:calc(100% - 3px); width:6px;
+  cursor: ew-resize; z-index: 1500;
+  background: linear-gradient(to right, transparent, rgba(255,255,255,.08), transparent);
+}
+/* Small handle in xhead (top-right) sharing same behavior as main right handle */
 </style>
 </head>
 <body>
@@ -526,22 +594,49 @@ body.taskmode #taskModeBadge{display:inline-flex;}
 </div>
 <div class="scrim" id="scrim"></div>
 
+<aside class="gantt-shell" id="gantt">
+  <div class="gantt-head">
+    <div class="title">Gantt</div>
+    <div class="gantt-xhead"><div class="gantt-months"><div class="gantt-monthsInner" id="ganttMonths"></div><div id="ganttMonthsResize" title="Drag to resize Gantt"></div></div></div>
+<div class="gantt-style">
+<details id="ganttStyleCtl">
+<summary>Style</summary>
+<div class="panel">
+<label for="zoomSlider">Zoom (day width)</label>
+<div class="zoom-buttons" style="display:flex; gap:6px; align-items:center;">
+  <button type="button" id="zoomOutBtn">−</button>
+  <input type="range" id="zoomSlider" min="12" max="60" step="1" style="width:140px">
+  <button type="button" id="zoomInBtn">+</button>
+</div>
 
+<label for="rowHeight">Row height</label>
+<input type="range" id="rowHeight" min="24" max="60" step="2" value="36">
+<label for="fontSize">Font size</label>
+<input type="number" id="fontSize" min="10" max="24" value="12">
 
-      <aside class="gantt-shell" id="gantt">
-        <div class="gantt-head">
-          <div class="title">Gantt</div>
-          <div class="gantt-xhead"><div class="gantt-months"><div class="gantt-monthsInner" id="ganttMonths"></div></div></div>
-        </div>
-        <div class="gantt-body">
-          <div class="gantt-left">
-            <ul class="gantt-tree" id="ganttTree"></ul>
-          </div>
-          <div class="gantt-xbody" id="ganttXBody">
-            <div class="gantt-month-bg" id="ganttMonthBG"></div>
-            <div class="gantt-grid" id="ganttGrid"></div>
-          </div>
-        </div>
+<label for="fontFamily">Font family</label>
+<select id="fontFamily">
+  <option value="Source Sans Pro, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif">Source Sans Pro</option>
+  <option value="system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif">System UI</option>
+  <option value="Georgia, 'Times New Roman', serif">Serif</option>
+  <option value="'Courier New', Courier, monospace">Monospace</option>
+</select>
+<label for="fontColor">Font color</label>
+<input type="color" id="fontColor" value="#FFFFFF">
+</div>
+</details>
+</div>
+
+  </div>
+  <div class="gantt-body">
+    <div class="gantt-left">
+      <ul class="gantt-tree" id="ganttTree"></ul>
+    </div>
+    <div class="gantt-xbody" id="ganttXBody">
+      <div class="gantt-month-bg" id="ganttMonthBG"></div>
+      <div class="gantt-grid" id="ganttGrid"></div>
+    </div>
+  </div>
       
         <!-- Gantt Task Drawer -->
         <aside class="drawer right" id="taskDrawer" aria-hidden="true">
@@ -580,6 +675,8 @@ body.taskmode #taskModeBadge{display:inline-flex;}
             </form>
           </div>
         </aside>
+<div id="ganttTreeResize" title="Drag to resize tree"></div>
+<div id="ganttResize" title="Drag to resize Gantt"></div>
 </aside>
     </div>
     
@@ -622,6 +719,8 @@ body.taskmode #taskModeBadge{display:inline-flex;}
   </main>
 
 <script>
+if (typeof root === "undefined") { var root = document.documentElement; }
+
 /* --- Confined scrollIntoView: only scroll the nearest scrollable ancestor (never the parent page) --- */
 (function(){
   var nativeFocus = HTMLElement.prototype.focus;
@@ -678,7 +777,44 @@ body.taskmode #taskModeBadge{display:inline-flex;}
     try{ nativeFocus.call(this, Object.assign({}, opts||{}, {preventScroll:true})); }
     catch(e){ nativeFocus.call(this); }
   };
-})();
+
+  // --- Left panel resize
+  const leftHandle = document.getElementById('ganttTreeResize');
+  if (leftHandle){
+    let sx=0, sw=0, dragging=false;
+    const minL = 160, maxL = 520;
+    function numberFromVar(val, fallback){ const n=parseFloat(val||''); return Number.isFinite(n)?n:fallback; }
+    leftHandle.addEventListener('mousedown', (e)=>{
+      e.preventDefault(); dragging=true; sx=e.clientX;
+      const used = getComputedStyle(root).getPropertyValue('--gantt-left-w').trim();
+      sw = numberFromVar(used, 260);
+      document.body.classList.add('noselect');
+    });
+    window.addEventListener('mousemove', (e)=>{
+      if(!dragging) return;
+      const dx = e.clientX - sx;
+      const w = Math.max(minL, Math.min(maxL, sw + dx));
+      root.style.setProperty('--gantt-left-w', w+'px');
+      // also move the handle itself by CSS left using var (handled by CSS calc)
+      window.persist && window.persist();
+    });
+    window.addEventListener('mouseup', ()=>{ dragging=false; document.body.classList.remove('noselect'); });
+  }
+    xHandle.addEventListener('mousedown', (e)=>{
+      e.preventDefault(); dragging=true; sx = e.clientX;
+      const used = getComputedStyle(root).getPropertyValue('--gantt-w').trim();
+      sw = numberFromVar(used, (document.querySelector('.gantt-shell')?.clientWidth || 860));
+      document.body.classList.add('noselect');
+    });
+    window.addEventListener('mousemove', (e)=>{
+      if(!dragging) return;
+      const dx = e.clientX - sx;
+      const w = Math.max(minW, Math.min(maxW, sw + dx));
+      root.style.setProperty('--gantt-w', w+'px'); window.persist && window.persist();
+    });
+    window.addEventListener('mouseup', ()=>{ dragging=false; document.body.classList.remove('noselect'); });
+  });
+
 
 (function(){
   const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -1187,7 +1323,7 @@ stNode.appendChild(stLabel);
   }
 });
 
-    const ROW_H = 36;
+    const ROW_H = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--row-h')) || 36;
     // Grid dimensions & guide rows
     grid.style.setProperty('--days', days);
     grid.style.setProperty('--colw', colw+'px');
@@ -1220,7 +1356,8 @@ stNode.appendChild(stLabel);
 
       const left = (dayOfYear(sClamp)-1) * colw;
       const span = Math.max(1, Math.floor((eClamp - sClamp)/86400000)+1);
-      const top = (idx*ROW_H) + 7;
+      const BAR_H = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--bar-h')) || 22;
+      const top = (idx*ROW_H) + Math.max(0, Math.floor((ROW_H - BAR_H)/2));
       const bar = document.createElement('div'); bar.className='bar'; bar.dataset.id = t.id;
       bar.style.left = left+'px'; bar.style.top = top+'px'; bar.style.width = (span*colw - 4)+'px';
       const color = t.color || STAGE_COLORS[t.stage] || '#74FBD6';
@@ -2142,7 +2279,6 @@ function enterEditMode(key, id, chipEl, e){
   decorateMonthHolidays();
   renderGantt(); try{ refreshTaskPickers(); }catch(_){ }
   
-})();
 
 
 (function bindInlineEditing(){
@@ -2175,6 +2311,101 @@ function enterEditMode(key, id, chipEl, e){
 })();
 
 
+
+
+/* === Gantt UI prefs, zoom, and resize =================================== */
+  const root = document.documentElement;
+  const prefsKey = 'GANTT_UI_PREFS_V1';
+  function getNumVar(name, fallback){
+    const v = getComputedStyle(root).getPropertyValue(name).trim();
+    const n = parseFloat(v||''); return (Number.isFinite(n) ? n : fallback);
+  }
+  function setVar(name, val){ root.style.setProperty(name, typeof val==='number'? (val+'px') : String(val)); }
+
+  // Load saved prefs
+  const saved = (()=>{ try{return JSON.parse(localStorage.getItem(prefsKey)||'{}')}catch(_){return{}} })();
+  if (saved.gcol) setVar('--gcol', saved.gcol);
+  if (saved.rowH) setVar('--row-h', saved.rowH);
+  if (saved.barH) setVar('--bar-h', saved.barH);
+  if (saved.fontSize) setVar('--gantt-font-size', saved.fontSize);
+  if (saved.fontFamily) setVar('--gantt-font-family', saved.fontFamily);
+  if (saved.fontWeight) setVar('--gantt-font-weight', saved.fontWeight);
+  if (typeof saved.fontColor !== 'undefined' && saved.fontColor !== '') setVar('--gantt-font-color', saved.fontColor);
+  if (saved.ganttW) setVar('--gantt-w', saved.ganttW);
+  if (saved.leftW) setVar('--gantt-left-w', saved.leftW);
+
+  // Wire controls
+  const zoomSlider = document.getElementById('zoomSlider');
+  const zoomInBtn = document.getElementById('zoomInBtn');
+  const zoomOutBtn = document.getElementById('zoomOutBtn');
+  const rowHeight = document.getElementById('rowHeight');
+  const fontSize  = document.getElementById('fontSize');
+  const fontFamily= document.getElementById('fontFamily');
+  const fontColor = document.getElementById('fontColor');
+
+  // Initialize UI from current CSS values
+  try{
+    if (zoomSlider){ const v = getNumVar('--gcol', 20); zoomSlider.value = Math.round(v); }
+    if (rowHeight){ rowHeight.value = getNumVar('--row-h', 36); }
+    if (fontSize){ fontSize.value = getNumVar('--gantt-font-size', 12); }
+    if (fontFamily){ /* leave default option unless user changes */ }
+    if (fontColor){ const c = (getComputedStyle(root).getPropertyValue('--gantt-font-color')||'').trim(); if(c) fontColor.value = c; }
+  }catch(_){}
+
+  function persist(){ 
+    const obj = { leftW: getComputedStyle(root).getPropertyValue('--gantt-left-w').trim(),
+      gcol: getNumVar('--gcol', 20),
+      rowH: getNumVar('--row-h', 36),
+      barH: getNumVar('--bar-h', 22),
+      fontSize: getNumVar('--gantt-font-size', 12),
+      fontFamily: getComputedStyle(root).getPropertyValue('--gantt-font-family').trim(),
+      fontWeight: getComputedStyle(root).getPropertyValue('--gantt-font-weight').trim(),
+      fontColor: getComputedStyle(root).getPropertyValue('--gantt-font-color').trim(),
+      ganttW: getComputedStyle(root).getPropertyValue('--gantt-w').trim()
+    };
+    try{ localStorage.setItem(prefsKey, JSON.stringify(obj)); }catch(_){}
+  }
+
+  function refreshGantt(){ try{ renderGantt(); }catch(_){ } }
+
+  if (zoomSlider){
+    const applyZoom = (val)=>{ setVar('--gcol', Math.max(12, Math.min(60, Number(val)))); window.persist && window.persist(); refreshGantt(); };
+    zoomSlider.addEventListener('input', (e)=> applyZoom(e.target.value));
+    if (zoomInBtn) zoomInBtn.addEventListener('click', ()=>{ zoomSlider.value = Math.min(60, Number(zoomSlider.value||20)+2); zoomSlider.dispatchEvent(new Event('input')); });
+    if (zoomOutBtn) zoomOutBtn.addEventListener('click', ()=>{ zoomSlider.value = Math.max(12, Number(zoomSlider.value||20)-2); zoomSlider.dispatchEvent(new Event('input')); });
+  }
+  if (rowHeight){ rowHeight.addEventListener('input', (e)=>{ setVar('--row-h', Number(e.target.value)); window.persist && window.persist(); refreshGantt(); }); }
+  
+  if (fontSize){ fontSize.addEventListener('input', (e)=>{ setVar('--gantt-font-size', Number(e.target.value)); window.persist && window.persist(); }); }
+  if (fontFamily){ fontFamily.addEventListener('change', (e)=>{ setVar('--gantt-font-family', e.target.value); window.persist && window.persist(); }); }
+  
+  if (fontColor){ fontColor.addEventListener('input', ()=>{ setVar('--gantt-font-color', fontColor.value); window.persist && window.persist(); }); }
+
+  // Resize handle: drag to change --gantt-w (affects whole app width)
+  const handle = document.getElementById('ganttResize');
+  if (handle){
+    let sx=0, sw=0, dragging=false;
+    const minW = 420, maxW = 2000;
+    function numberFromVar(val, fallback){
+      const n = parseFloat(val||''); return Number.isFinite(n) ? n : fallback;
+    }
+    handle.addEventListener('mousedown', (e)=>{
+      e.preventDefault(); dragging=true; sx = e.clientX;
+      const used = getComputedStyle(root).getPropertyValue('--gantt-w').trim();
+      sw = numberFromVar(used, (document.querySelector('.gantt-shell')?.clientWidth || 860));
+      document.body.classList.add('noselect');
+    });
+    window.addEventListener('mousemove', (e)=>{
+      if(!dragging) return;
+      const dx = e.clientX - sx;
+      const w = Math.max(minW, Math.min(maxW, sw + dx));
+      setVar('--gantt-w', w); window.persist && window.persist();
+    });
+    window.addEventListener('mouseup', ()=>{ dragging=false; document.body.classList.remove('noselect'); });
+    handle.addEventListener('dblclick', ()=>{ setVar('--gantt-w', 860); window.persist && window.persist(); });
+  }
+})();
+
 </script>
 
 <div id="dayColorMenu" class="context-menu" aria-hidden="true" hidden>
@@ -2203,6 +2434,38 @@ function enterEditMode(key, id, chipEl, e){
   <div class="item" data-action="delete">Delete stage</div>
   <div class="item" data-action="create">Create new stage</div>
 </div>
+
+
+<script>
+// Global fallback: persist current Gantt UI prefs to localStorage
+if (typeof window.persistGanttPrefs !== 'function') {
+  window.persistGanttPrefs = function(){
+    try{
+      var root = document.documentElement;
+      function num(name, fallback){
+        var v = getComputedStyle(root).getPropertyValue(name).trim();
+        var n = parseFloat(v||''); return isFinite(n) ? n : fallback;
+      }
+      var obj = {
+        gcol: num('--gcol', 20),
+        rowH: num('--row-h', 36),
+        barH: num('--bar-h', 22),
+        fontSize: num('--gantt-font-size', 12),
+        fontFamily: getComputedStyle(root).getPropertyValue('--gantt-font-family').trim(),
+        fontWeight: getComputedStyle(root).getPropertyValue('--gantt-font-weight').trim(),
+        fontColor: getComputedStyle(root).getPropertyValue('--gantt-font-color').trim(),
+        ganttW: getComputedStyle(root).getPropertyValue('--gantt-w').trim(),
+        leftW: getComputedStyle(root).getPropertyValue('--gantt-left-w').trim()
+      };
+      localStorage.setItem('GANTT_UI_PREFS_V1', JSON.stringify(obj));
+    }catch(e){ /* no-op */ }
+  };
+}
+// Provide 'persist' alias for any call sites
+if (typeof window.persist !== 'function') {
+  window.persist = window.persistGanttPrefs;
+}
+</script>
 
 </body>
 </html>
